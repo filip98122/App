@@ -81,48 +81,6 @@ def get_angle(dx,dy):
     angle_rad = math.atan2(dy, dx)
     angle_deg = math.degrees(angle_rad)
     return angle_deg
-
-class Player:
-    def __init__(s,x,y):
-        s.x=x
-        s.y=y
-        s.width=HEIGHT/12
-        s.height=HEIGHT/9
-        s.scaled_img=pygame.transform.scale(loaded[0],(s.width,s.height))
-    def draw(s,window):
-        window.blit(s.scaled_img,(s.x+((s.height-s.width)/2),s.y))
-player=Player(100,100)
-class Gem:
-    def __init__(s,x,y):
-        s.x=x
-        s.y=y
-        s.img=pygame.transform.scale(loaded[4],(HEIGHT/9,HEIGHT/9))
-    def draw(s,window):
-        window.blit(s.img,(s.x,s.y))
-class Dirt:
-    def __init__(s,x,y):
-        s.x=x
-        s.y=y
-        s.img=pygame.transform.scale(loaded[1],(HEIGHT/9,HEIGHT/9))
-    def draw(s,window):
-        window.blit(s.img,(s.x,s.y))
-class Boulder:
-    def __init__(s,x,y):
-        s.x=x
-        s.y=y
-        s.img=pygame.transform.scale(loaded[2],(HEIGHT/9,HEIGHT/9))
-    def draw(s,window):
-        window.blit(s.img,(s.x,s.y))
-class Wall:
-    def __init__(s,x,y):
-        s.x=x
-        s.y=y
-        s.img=pygame.transform.scale(loaded[3],(HEIGHT/9,HEIGHT/9))
-    def draw(s,window):
-        window.blit(s.img,(s.x,s.y))
-l_dirt=[]
-l_walls=[]
-l_boulders=[]
 l_terrain=[
     "wwwwwwwwwwwwwwww",
     "wddddddddddddgdw",
@@ -136,19 +94,28 @@ l_terrain=[
     "wddddddddddddddw",
     "wwwwwwwwwwwwwwww"
 ]
-l_gems=[]
-for i in range(len(l_terrain)):
-    for j in range(len(l_terrain[i])):
-        if l_terrain[i][j]=="d":
-            l_dirt.append(Dirt(j*(HEIGHT/9),i*(HEIGHT/9)))
-        if l_terrain[i][j]=="p":
-            player=Player(j*(HEIGHT)/9,i*(HEIGHT/9))
-        if l_terrain[i][j]=="b":
-            l_boulders.append(Boulder(j*(HEIGHT/9),i*(HEIGHT/9)))
-        if l_terrain[i][j]=="w":
-            l_walls.append(Wall(j*(HEIGHT/9),i*(HEIGHT/9)))
-        if l_terrain[i][j]=="g":
-            l_gems.append(Gem(j*(HEIGHT/9),i*(HEIGHT/9)))
+
+class Terrain:
+    def draw(s, map):
+        for i in range(len(l_terrain)):
+            for j in range(len(l_terrain[i])):
+                if l_terrain[i][j]=="d":
+                    s.img=pygame.transform.scale(loaded[1],(HEIGHT/9,HEIGHT/9))
+                if l_terrain[i][j]=="p":
+                    s.img=pygame.transform.scale(loaded[0],(HEIGHT/12,HEIGHT/9))
+                if l_terrain[i][j]=="b":
+                    s.img=pygame.transform.scale(loaded[2],(HEIGHT/9,HEIGHT/9))
+                if l_terrain[i][j]=="w":
+                    s.img=pygame.transform.scale(loaded[3],(HEIGHT/9,HEIGHT/9))
+                if l_terrain[i][j]=="g":
+                    s.img=pygame.transform.scale(loaded[4],(HEIGHT/9,HEIGHT/9))
+                
+                if l_terrain[i][j]=="p":
+                    window.blit(s.img,(j*(HEIGHT/9)+((HEIGHT/9-HEIGHT/12)/2),i*(HEIGHT/9)))
+                else:
+                    window.blit(s.img,(j*(HEIGHT/9)+((HEIGHT/9-HEIGHT/12)/2),i*(HEIGHT/9)))
+terrain=Terrain()
+        
 while True:
     window.fill("Black")
     keys = pygame.key.get_pressed()
@@ -160,14 +127,6 @@ while True:
             break
     if keys[pygame.K_ESCAPE]:
         break
-    for i in range(len(l_dirt)):
-        l_dirt[i].draw(window)
-    for i in range(len(l_boulders)):
-        l_boulders[i].draw(window)
-    for i in range(len(l_walls)):
-        l_walls[i].draw(window)
-    for i in range(len(l_gems)):
-        l_gems[i].draw(window)
-    player.draw(window)
+    terrain.draw(l_terrain)
     pygame.display.update()
     clock.tick(60)
