@@ -82,40 +82,80 @@ def get_angle(dx,dy):
     angle_deg = math.degrees(angle_rad)
     return angle_deg
 l_terrain=[
-    "wwwwwwwwwwwwwwww",
-    "wddddddddddddgdw",
-    "wddddddddddddgdw",
-    "wddddddddddddgdw",
-    "wddddddddddddgdw",
-    "wddddddpbddddddw",
-    "wddddddddddddddw",
-    "wddddddddddddddw",
-    "wddddddddddddddw",
-    "wddddddddddddddw",
-    "wwwwwwwwwwwwwwww"
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww",
+    "wddddddddddddgdddddddddddddddddddddddddddddddddddddddddddddddddddddddw",
+    "wddgdgdddgdddgdddddddddddddgggddddgdddddddggddddgddgdddddddddddddddddw",
+    "wddgggdddgdddddddddddddddddgddgddgdgdddddgddgdddgdgddddddddddddddddddw",
+    "wddgdgdddgdddbd     dddddddgggddgdddgddddgddddddggdddddddddddddddddddw",
+    "wddddddpbdddddd     dddddddggdddgdddgddddgddddddggdddddddddddddddddddw",
+    "wdddddddddddddd     dddddddgdgdddgdgdddddgddgdddgdgddddddddddddddddddw",
+    "wdddddddddddddd     dddddddgddgdddgdddddddggddddgddgdddddddddddddddddw",
+    "wddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddw",
+    "wddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddw",
+    "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
 ]
-
+vremepre=time.time()
+najvecivreme=0
 class Terrain:
     def draw(s, map):
-        for i in range(len(l_terrain)):
-            for j in range(len(l_terrain[i])):
+        for i in range(len(map)):
+            for j in range(len(map[i])):
+                s.img=""
                 if l_terrain[i][j]=="d":
-                    s.img=pygame.transform.scale(loaded[1],(HEIGHT/9,HEIGHT/9))
+                    s.img=loaded[1]
                 if l_terrain[i][j]=="p":
-                    s.img=pygame.transform.scale(loaded[0],(HEIGHT/12,HEIGHT/9))
+                    s.img=loaded[0]
                 if l_terrain[i][j]=="b":
-                    s.img=pygame.transform.scale(loaded[2],(HEIGHT/9,HEIGHT/9))
+                    s.img=loaded[2]
                 if l_terrain[i][j]=="w":
-                    s.img=pygame.transform.scale(loaded[3],(HEIGHT/9,HEIGHT/9))
+                    s.img=loaded[3]
                 if l_terrain[i][j]=="g":
-                    s.img=pygame.transform.scale(loaded[4],(HEIGHT/9,HEIGHT/9))
+                    s.img=loaded[4]
                 
                 if l_terrain[i][j]=="p":
                     window.blit(s.img,(j*(HEIGHT/9)+((HEIGHT/9-HEIGHT/12)/2),i*(HEIGHT/9)))
                 else:
-                    window.blit(s.img,(j*(HEIGHT/9)+((HEIGHT/9-HEIGHT/12)/2),i*(HEIGHT/9)))
+                    if j*(HEIGHT/9)+offsetx>-1+-HEIGHT/9 and j*(HEIGHT/9)+offsetx<WIDTH and i*(HEIGHT/9)+offsety>-1+-HEIGHT/9 and i*(HEIGHT/9)+offsety<=HEIGHT and s.img!="":
+                        window.blit(s.img,(j*(HEIGHT/9)+offsetx,i*(HEIGHT/9)+offsety))
+if pygame.joystick.get_count()>0:
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+diamonds=0
 terrain=Terrain()
-        
+offsetx=0
+offsety=0
+camera_speed=HEIGHT/9
+between=0
+SVAKIH30=0
+class Player:
+    def __init__(s,x,y):
+        s.x=x
+        s.y=y
+    def move(s,map):
+        global diamonds
+        terraincheck=map[int(s.y/(HEIGHT/9)-(offsety/(HEIGHT/9)))][int(s.x/(HEIGHT/9)-offsetx/(HEIGHT/9))]
+        goback=True
+        if terraincheck=="d" or terraincheck==" ":
+            map[int(s.y/(HEIGHT/9)-(offsety/(HEIGHT/9)))] = replace_at(map[int(s.y/(HEIGHT/9)-(offsety/(HEIGHT/9)))], [int(s.x/(HEIGHT/9)-offsetx/(HEIGHT/9))], " ")
+            goback=False
+        if terraincheck=="g":
+            diamonds+=1
+            goback=False
+            map[int(s.y/(HEIGHT/9)-(offsety/(HEIGHT/9)))] = replace_at(map[int(s.y/(HEIGHT/9)-(offsety/(HEIGHT/9)))], [int(s.x/(HEIGHT/9)-offsetx/(HEIGHT/9))], " ")
+        return map,goback
+def replace_at(s, index, new_char):
+    return s[:index[0]] + new_char + s[index[0]+1:]
+
+
+for i in range(len(l_terrain)):
+    for j in range(len(l_terrain[i])):
+        if l_terrain[i][j]=="p":
+            player=Player(j*(HEIGHT/9),i*(HEIGHT/9))
+
+
+
+
+
 while True:
     window.fill("Black")
     keys = pygame.key.get_pressed()
@@ -125,8 +165,45 @@ while True:
     for event in events:
         if event.type == pygame.QUIT:
             break
+        if between<=0:
+                
+                x = joystick.get_axis(0)
+                y = joystick.get_axis(1)  # Invert Y for normal coordinate system
+
+                magnitude = math.hypot(x, y)
+                if magnitude > 0.2:  # Deadzone to avoid jitter
+                    angle = math.degrees(math.atan2(-y, x))
+                    angle%=360
+                    preoffset=[offsetx,offsety]
+                    if angle<=45 or angle>315:
+                        offsetx-=camera_speed
+                    elif angle>45 and angle<=135:
+                        offsety+=camera_speed
+                    elif angle<=225 and angle>135:
+                        offsetx+=camera_speed
+                    else:
+                        offsety-=camera_speed
+                    between=12
+                    l_terrain,goback=player.move(l_terrain)
+                    if goback:
+                        offsetx=preoffset[0]
+                        offsety=preoffset[1]
     if keys[pygame.K_ESCAPE]:
         break
+    if between>0:
+        between-=1
     terrain.draw(l_terrain)
+    if keys[pygame.K_b]:
+        breakpoint()
+        
     pygame.display.update()
     clock.tick(60)
+    SVAKIH30+=1
+    if SVAKIH30==30:
+        SVAKIH30=0
+        if time.time()-vremepre>najvecivreme:
+            najvecivreme=time.time()-vremepre
+        print(time.time()-vremepre)
+        vremepre=time.time()
+print(najvecivreme)
+print(30/najvecivreme)
