@@ -14,6 +14,7 @@ class Loader:
         loaded[4]=pygame.transform.scale(loaded[4],(tilewh,tilewh))
         loaded[6]=pygame.transform.scale(pygame.image.load("textures/backgroundmenu.png"),(WIDTH,HEIGHT))
         loaded[5]=pygame.transform.scale(pygame.image.load("textures/door.png"),(tilewh,tilewh))
+        loaded[7]=pygame.transform.scale(pygame.image.load("textures/brick.png"),(tilewh,tilewh))
         return loaded
 loader=Loader()
 loaded=loader.load()
