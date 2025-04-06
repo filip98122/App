@@ -15,6 +15,10 @@ class Loader:
         loaded[6]=pygame.transform.scale(pygame.image.load("textures/backgroundmenu.png"),(WIDTH,HEIGHT))
         loaded[5]=pygame.transform.scale(pygame.image.load("textures/door.png"),(tilewh,tilewh))
         loaded[7]=pygame.transform.scale(pygame.image.load("textures/brick.png"),(tilewh,tilewh))
+        loaded[8]=pygame.transform.scale(pygame.image.load("textures/dooro.png"),(tilewh,tilewh))
+        loaded["font"]=pygame.sysfont.SysFont("S",90)
+        loaded[9]=pygame.transform.scale(loaded["font"].render(f"You Failed",False,(255,255,255)),(10*(tilewh/3),tilewh))
+        loaded[10]=pygame.transform.scale(pygame.image.load("textures/death.png"),(WIDTH,HEIGHT))
         return loaded
 loader=Loader()
 loaded=loader.load()

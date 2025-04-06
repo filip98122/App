@@ -13,8 +13,8 @@ def end():
     decrypted_data = f.decrypt(encrypted_data)
     decrypted_data1=json.loads(decrypted_data.decode('utf-8'))
     return decrypted_data1
-
-
+camerax=0
+cameray=0
 def collison(x1,y1,r1,x2,y2,r2):
     dx = x2 - x1
     dy = y2 - y1
@@ -109,6 +109,7 @@ class Explosion:
         s.delay=delay
         s.alive=True
     def general(s,map):
+        global prozor
         if s.delay>0:
             s.delay-=1
         if s.delay==0:
@@ -120,13 +121,13 @@ class Explosion:
                     terrainexplosion=map[base1+i][base2+j]
                     if terrainexplosion=="p":
                         pass
-                        #die
+                        prozor=-1
                     elif terrainexplosion=="g":
                         gemindex=find_gems((base2+j)*tilewh,(base1+i)*tilewh)
                         if l_gems[gemindex].explodid_spawn==False and l_gems[gemindex].x!=base2*tilewh and l_gems[gemindex].y !=base1*tilewh:
                             l_explosions.append(Explosion(base2+j,base1+i   ,30))
                             l_gems[gemindex].explodid_spawn=True
-                    elif terrainexplosion!="w":
+                    elif terrainexplosion!="w" and terrainexplosion!="v":
                         map[base1+i][base2+j]="g"
                         l_gems.append(Diamond((base2+j)*tilewh,(base1+i)*tilewh,True))
                     if terrainexplosion=="b":
@@ -149,14 +150,18 @@ class Terrain:
                 if l_terrain[i][j]=="g":
                     s.img=loaded[4]
                 if l_terrain[i][j]=="v":
-                    s.img=loaded[5]
+                    if dooropen==False:
+                        s.img=loaded[5]
+                    else:
+                        s.img=loaded[8]
+                    
                 if l_terrain[i][j]=="c":
                     s.img=loaded[7]
                 if l_terrain[i][j]=="p":
                     window.blit(s.img,(player.x,player.y))
                 else:
                     if j*(tilewh)+offsetx>-1+-tilewh and j*(tilewh)+offsetx<WIDTH and i*(tilewh)+offsety>-1+-tilewh and i*(tilewh)+offsety<=HEIGHT and s.img!="":
-                        window.blit(s.img,(j*(tilewh)+offsetx,i*(tilewh)+offsety))
+                        window.blit(s.img,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
@@ -165,6 +170,7 @@ terrain=Terrain()
 camera_speed=tilewh
 SVAKIH30=0
 l_gems=[]
+deathtime=300
 offsetx=0
 offsety=0
 class Diamond:
@@ -177,6 +183,7 @@ class Diamond:
         s.alive=True
         s.explodid_spawn=explod
     def move(s,map):
+        global prozor
         if s.alive:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
             if terraincheck=="d" or terraincheck=="w":
@@ -189,7 +196,10 @@ class Diamond:
                     s.time=s.again
                     s.Falling=True
             elif terraincheck=="p":
-                s.Falling=False
+                if s.Falling==True:
+                    if s.time==0:
+                        prozor=-1
+                        s.alive=False
             elif terraincheck=="g":
                     if s.Falling==True:
                         ispodindex=find_gems(s.x,s.y+tilewh)
@@ -247,8 +257,9 @@ class Diamond:
             if s.time>0:
                 s.time-=1
 
-
-
+def die():
+    window.blit(loaded[10],(0,0))
+    window.blit(loaded[9],((WIDTH/2)-(loaded[9].get_width()/2),0))
 
 
 
@@ -263,6 +274,7 @@ class Boulder:
         s.time=s.again
         s.alive=True
     def move(s,map):
+        global prozor
         if s.alive==True:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
             if terraincheck=="d" or terraincheck=="w":
@@ -278,7 +290,7 @@ class Boulder:
                 if s.Falling==True:
                     if s.time==0:
                         pass
-                        #die
+                        prozor=-1
                 else:
                     s.Falling=False
                     pass
@@ -340,6 +352,46 @@ class Boulder:
                                     s.time=s.again
             if s.time>0:
                 s.time-=1
+                
+
+
+
+class Game_bar:
+    def __init__(s):
+        s.x=0
+        s.y=0
+        s.daimonds_to_collect=s.change_d()
+        s.timer=s.change_t()
+    def general(s):
+        pygame.draw.rect(window,(50,50,50),pygame.Rect(0,0,WIDTH,tilewh))
+        pygame.draw.rect(window,(0,0,0),pygame.Rect(0+tilewh/10,0+tilewh/10,WIDTH-tilewh/5,tilewh-tilewh/5))
+        window.blit(s.daimonds_to_collect,(WIDTH/2-tilewh*1.5,0))
+        window.blit(s.timer,(WIDTH/2+tilewh/2,0))
+    def change_d(s):
+        if l_level[level-1][0]-diamonds<=0:
+            if l_level[level-1][0]-diamonds==0:
+                global dooropen
+                dooropen=True
+            else:
+                return s.daimonds_to_collect
+        return pygame.transform.scale(loaded["font"].render(f"{l_level[level-1][0]-diamonds}",False,(255,255,255)),(len(f"{l_level[level-1][0]-diamonds}")*(tilewh/3),tilewh))
+    def change_t(s):
+        global prozor
+        if l_level[level-1][1]-seconds<=0:
+            prozor=-1
+            return s.timer
+        return pygame.transform.scale(loaded["font"].render(f"{l_level[level-1][1]-seconds}",False,(255,255,255)),(len(f"{l_level[level-1][1]-seconds}")*(tilewh/3),tilewh))
+    
+def globalize():
+    global prozor
+    global l_terrain
+    global window
+globalize()
+dooropen=False
+seconds=0
+elapsed_time=0
+bar=Game_bar()
+
 class Player:
     def __init__(s,x,y):
         s.x=x
@@ -356,10 +408,13 @@ class Player:
         if terraincheck=="g":
             goback=False
             igems=find_gems(s.x-offsetx,s.y-offsety)
+            if l_gems[igems].Falling==True:
+                prozor=-1
             l_gems[igems].alive=False
             diamonds+=1
             map[indexpre1][indexpre2]=" "
             map[int(s.y/(tilewh)-(offsety/(tilewh)))][int(s.x/(tilewh)-offsetx/(tilewh))]="p"
+            bar.daimonds_to_collect=bar.change_d()
         if terraincheck=="b":
             if s.time==-6:
                 if direction==1:
@@ -394,7 +449,9 @@ for i in range(len(l_terrain)):
             l_boulders.append(Boulder(j*(tilewh),i*(tilewh)))
         if l_terrain[i][j]=="g":
             l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
-
+class Button:
+    def __init__(s,x,y,img):
+        s.x=x
 
 def background(img):
     window.blit(img,(0,0))
@@ -425,6 +482,13 @@ while True:
                 del l_boulders[indexdelete]
                 indexdelete-=1
             indexdelete+=1
+        elapsed_time += clock.get_time()
+
+        if elapsed_time >= 1000:
+            #secondpassed
+            bar.timer=bar.change_t()
+            seconds+=1
+            elapsed_time -= 1000
         if player.time<=0:
             if pygame.joystick.get_count()>0:
                 try:
@@ -515,7 +579,7 @@ while True:
                 indexdelete-=1
             indexdelete+=1
         terrain.draw(l_terrain)
-        
+        bar.general()
     if prozor==0:
         window.fill("Black")
         background(loaded[6])
@@ -528,7 +592,23 @@ while True:
                 break
         if keys[pygame.K_ESCAPE]:
             break
-        
+    if prozor==-1:
+        window.fill("Black")
+        die()
+        keys = pygame.key.get_pressed()
+        events = pygame.event.get()
+        mouseState = pygame.mouse.get_pressed()
+        mousePos = pygame.mouse.get_pos()
+        for event in events:
+            if event.type == pygame.QUIT:
+                break
+        if keys[pygame.K_ESCAPE]:
+            break
+        if deathtime>0:
+            deathtime-=1
+        else:
+            prozor=0
+            deathtime=300
     pygame.display.update()
     clock.tick(60)
     SVAKIH30+=1
@@ -538,5 +618,6 @@ while True:
             najvecivreme=time.time()-vremepre
         print(time.time()-vremepre)
         vremepre=time.time()
+    
 print(najvecivreme)
 print(30/najvecivreme)

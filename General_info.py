@@ -11,6 +11,7 @@ pygame.mixer.init()
 keys = pygame.key.get_pressed()
 keyE = b'nL5cTPi0324Gk2zgRDR6E4Y2iVHfWnrKu4kGzcB1ZnU='
 clock = pygame.time.Clock()
-WIDTH,HEIGHT = 1540,900
+WIDTH,HEIGHT = 1920,1080
+#WIDTH,HEIGHT=765,765
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 tilewh=HEIGHT/15
