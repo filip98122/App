@@ -158,9 +158,9 @@ class Terrain:
                 if l_terrain[i][j]=="c":
                     s.img=loaded[7]
                 if l_terrain[i][j]=="p":
-                    window.blit(s.img,(player.x,player.y))
+                    window.blit(s.img,(player.x+camerax,player.y+cameray))
                 else:
-                    if j*(tilewh)+offsetx>-1+-tilewh and j*(tilewh)+offsetx<WIDTH and i*(tilewh)+offsety>-1+-tilewh and i*(tilewh)+offsety<=HEIGHT and s.img!="":
+                    if j*(tilewh)+offsetx+camerax>-1+-tilewh and j*(tilewh)+offsetx+camerax<WIDTH and i*(tilewh)+offsety+cameray>-1+-tilewh and i*(tilewh)+cameray+offsety<=HEIGHT and s.img!="":
                         window.blit(s.img,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
@@ -382,11 +382,7 @@ class Game_bar:
             return s.timer
         return pygame.transform.scale(loaded["font"].render(f"{l_level[level-1][1]-seconds}",False,(255,255,255)),(len(f"{l_level[level-1][1]-seconds}")*(tilewh/3),tilewh))
     
-def globalize():
-    global prozor
-    global l_terrain
-    global window
-globalize()
+
 dooropen=False
 seconds=0
 elapsed_time=0
@@ -397,34 +393,55 @@ class Player:
         s.x=x
         s.y=y
         s.time=12
-    def move(s,map,direction):
+    def move(s,map,direction,A):
+        global cameray
+        global camerax
+        if camerax!=0 or cameray!=0:
+            camerax=0
+            cameray=0
+            goback=True
+            player.time=15
+            return map,goback
         global diamonds
         terraincheck=map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]
         goback=True
-        if terraincheck=="d" or terraincheck==" ":
+        if A:
+            if terraincheck=="d":
+                map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]=" "
+                s.time=15
+            elif terraincheck=="g":
+                igems=find_gems(s.x-offsetx,s.y-offsety)
+                l_gems[igems].alive=False
+                diamonds+=1
+                bar.daimonds_to_collect=bar.change_d()
+                map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]=" "
+                s.time=15
+        elif terraincheck=="d" or terraincheck==" ":
             map[indexpre1][indexpre2]=" "
             map[int(s.y/(tilewh)-(offsety/(tilewh)))][int(s.x/(tilewh)-offsetx/(tilewh))]="p"
             goback=False
-        if terraincheck=="g":
+        elif terraincheck=="g":
             goback=False
             igems=find_gems(s.x-offsetx,s.y-offsety)
             if l_gems[igems].Falling==True:
+                global prozor
                 prozor=-1
             l_gems[igems].alive=False
             diamonds+=1
             map[indexpre1][indexpre2]=" "
             map[int(s.y/(tilewh)-(offsety/(tilewh)))][int(s.x/(tilewh)-offsetx/(tilewh))]="p"
             bar.daimonds_to_collect=bar.change_d()
-        if terraincheck=="b":
+            
+        elif terraincheck=="b":
             if s.time==-6:
                 if direction==1:
                     if map[indexpre1][indexpre2+2]==" ":
                         iboulder=find_boulder((indexpre2+1)*tilewh,indexpre1*tilewh)
                         if l_boulders[iboulder].Falling==False:
                             map[indexpre1][indexpre2+1]="p"
-                            map[indexpre1][indexpre2]=" "
+                            map[indexpre1][indexpre2] = " "
                             map[indexpre1][indexpre2+2]="b"
-                            l_boulders[iboulder].x+=tilewh
+                            l_boulders[iboulder].x +=tilewh
                             goback=False
                 elif direction==3:
                     if map[indexpre1][indexpre2-2]==" ":
@@ -450,12 +467,17 @@ for i in range(len(l_terrain)):
         if l_terrain[i][j]=="g":
             l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
 class Button:
-    def __init__(s,x,y,img):
+    def __init__(s,x,y,img,purpose):
         s.x=x
+        s.y=y
+        s.img=loaded[img]
+        s.purpose=purpose
+    def draw(s):
+        window.blit(s.img,(s.x,s.ys))
 
 def background(img):
     window.blit(img,(0,0))
-
+A_for_player=False
 
 px=((WIDTH/2)/tilewh)*tilewh
 py=((HEIGHT/2)/tilewh)*tilewh
@@ -464,6 +486,7 @@ offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
 offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
 player.x=((WIDTH/2)/tilewh)*tilewh
 player.y=((HEIGHT/2)/tilewh)*tilewh
+fps = []
 while True:
     if prozor==1:
         window.fill("Black")
@@ -474,6 +497,16 @@ while True:
         for event in events:
             if event.type == pygame.QUIT:
                 break
+            if event.type == pygame.JOYBUTTONDOWN:
+                if pygame.joystick.get_count()>0:
+                    if event.button==0 and keys[pygame.K_q]==False:
+                        A_for_player=True
+            if event.type==pygame.JOYBUTTONUP:
+                if pygame.joystick.get_count()>0:
+                    if event.button==0:
+                        A_for_player=False
+        if keys[pygame.K_q]:
+            A_for_player=True
         for i in range(len(l_boulders)):
             l_boulders[i].move(l_terrain)
         indexdelete=0
@@ -517,7 +550,7 @@ while True:
                     else:
                         offsety-=camera_speed
                         direction=4
-                    l_terrain,goback=player.move(l_terrain,direction)
+                    l_terrain,goback=player.move(l_terrain,direction,A_for_player)
                     if goback:
                         offsetx=preoffset[0]
                         offsety=preoffset[1]
@@ -545,7 +578,7 @@ while True:
                     offsety+=camera_speed
                     went=True
                 if went==True:
-                    l_terrain,goback=player.move(l_terrain,direction)
+                    l_terrain,goback=player.move(l_terrain,direction,A_for_player)
                     if goback:
                         offsetx=preoffset[0]
                         offsety=preoffset[1]
@@ -554,6 +587,23 @@ while True:
         
         if keys[pygame.K_ESCAPE]:
             break
+        if keys[pygame.K_UP]:
+            cameray+=camera_speed/5
+        if keys[pygame.K_DOWN]:
+            cameray-=camera_speed/5
+        if keys[pygame.K_RIGHT]:
+            camerax-=camera_speed/5
+        if keys[pygame.K_LEFT]:
+            camerax+=camera_speed/5
+        
+        
+        
+        
+        
+        
+        
+        
+        
         if player.time>-6:
             player.time-=1
         indexdelete=0
@@ -562,7 +612,11 @@ while True:
                 
                 del l_gems[indexdelete]
                 indexdelete-=1
+            else:
+                if len(l_explosions)==0:
+                    l_gems[indexdelete].explodid_spawn=False
             indexdelete+=1
+            
         for i in range(len(l_gems)):
             l_gems[i].move(l_terrain)
         indexdelete=0
