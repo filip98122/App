@@ -183,12 +183,14 @@ class Diamond:
         s.alive=True
         s.explodid_spawn=explod
     def move(s,map):
+        need=False
         global prozor
         if s.alive:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
-            if terraincheck=="d" or terraincheck=="w":
+            if terraincheck=="d" or terraincheck=="w" or terraincheck=="c" or terraincheck=="v":
                 s.Falling=False
             elif terraincheck==" ":
+                need=True
                 if s.time==0:
                     map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="g"
                     map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
@@ -206,22 +208,26 @@ class Diamond:
                         if l_gems[ispodindex].Falling==False:
                             s.Falling=False
                     else:
-                        if s.time==0:
-                            ispodindex=find_gems(s.x,s.y+tilewh)
-                            if ispodindex!=None:
-                                if l_gems[ispodindex].Falling==False:
-                                    levo=map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]
-                                    levodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))-1]
-                                    desno=map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]
-                                    desnodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))+1]
-                                    if levo==" " and levodole==" ":
+                    
+                        ispodindex=find_gems(s.x,s.y+tilewh)
+                        if ispodindex!=None:
+                            if l_gems[ispodindex].Falling==False:
+                                levo=map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]
+                                levodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))-1]
+                                desno=map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]
+                                desnodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))+1]
+                                if levo==" " and levodole==" ":
+                                    need=True
+                                    if s.time==0:
                                         map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]="g"
                                         map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
                                         s.Falling=True
                                         s.x-=tilewh
                                         s.time=s.again
-                                    elif desno==" ":
-                                        if desnodole==" ":
+                                elif desno==" ":
+                                    if desnodole==" ":
+                                        need=True
+                                        if s.time==0:
                                             map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]="g"
                                             map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
                                             s.Falling=True
@@ -233,6 +239,7 @@ class Diamond:
                         if l_boulders[ispodindex].Falling==False:
                             s.Falling=False
                     else:
+                        need=True
                         if s.time==0:
                             #tumble
                             ispodindex=find_boulder(s.x,s.y+tilewh)
@@ -255,7 +262,8 @@ class Diamond:
                                         s.x+=tilewh
                                         s.time=s.again
             if s.time>0:
-                s.time-=1
+                if s.Falling==True or need:
+                    s.time-=1
 
 def die():
     window.blit(loaded[10],(0,0))
@@ -275,11 +283,13 @@ class Boulder:
         s.alive=True
     def move(s,map):
         global prozor
+        need=False
         if s.alive==True:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
-            if terraincheck=="d" or terraincheck=="w":
+            if terraincheck=="d" or terraincheck=="w" or terraincheck=="c" or terraincheck=="v":
                 s.Falling=False
             elif terraincheck==" ":
+                need=True
                 if s.time==0:
                     map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="b"
                     map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
@@ -300,6 +310,7 @@ class Boulder:
                         if l_boulders[ispodindex].Falling==False:
                             s.Falling=False
                     else:
+                        need=True
                         if s.time==0:
                             #tumble
                             ispodindex=find_boulder(s.x,s.y+tilewh)
@@ -330,6 +341,7 @@ class Boulder:
                         l_gems[ispodindex].explodid_spawn=True
                         l_explosions.append(Explosion(base2,base1,0))
                 else:
+                    need==True
                     if s.time==0:
                         ispodindex=find_gems(s.x,s.y+tilewh)
                         if l_gems[ispodindex].Falling==False:
@@ -351,7 +363,8 @@ class Boulder:
                                     s.x+=tilewh
                                     s.time=s.again
             if s.time>0:
-                s.time-=1
+                if s.Falling==True or need:
+                    s.time-=1
                 
 
 
@@ -479,8 +492,6 @@ def background(img):
     window.blit(img,(0,0))
 A_for_player=False
 
-px=((WIDTH/2)/tilewh)*tilewh
-py=((HEIGHT/2)/tilewh)*tilewh
 prozor=1
 offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
 offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
@@ -489,6 +500,7 @@ player.y=((HEIGHT/2)/tilewh)*tilewh
 fps = []
 while True:
     if prozor==1:
+        went=False
         window.fill("Black")
         keys = pygame.key.get_pressed()
         events = pygame.event.get()
@@ -499,14 +511,18 @@ while True:
                 break
             if event.type == pygame.JOYBUTTONDOWN:
                 if pygame.joystick.get_count()>0:
-                    if event.button==0 and keys[pygame.K_q]==False:
-                        A_for_player=True
-            if event.type==pygame.JOYBUTTONUP:
-                if pygame.joystick.get_count()>0:
                     if event.button==0:
-                        A_for_player=False
+                        A_for_player=True
+
         if keys[pygame.K_q]:
             A_for_player=True
+        else:
+            if pygame.joystick.get_count()>0:
+                if joystick.get_button(0)==False:
+                    A_for_player=False
+            else:
+                A_for_player=False
+                    
         for i in range(len(l_boulders)):
             l_boulders[i].move(l_terrain)
         indexdelete=0
@@ -523,6 +539,9 @@ while True:
             seconds+=1
             elapsed_time -= 1000
         if player.time<=0:
+            indexpre1=int(player.y/(tilewh)-((offsety/tilewh)))
+            indexpre2=int(player.x/(tilewh)-((offsetx/tilewh)))
+            preoffset=[offsetx,offsety]
             if pygame.joystick.get_count()>0:
                 try:
                     a=joystick.get_axis(0)
@@ -535,9 +554,7 @@ while True:
                 if magnitude > 0.4:  # Deadzone to avoid jitter
                     angle = math.degrees(math.atan2(-y, x))
                     angle%=360
-                    indexpre1=int(player.y/(tilewh)-((offsety/tilewh)))
-                    indexpre2=int(player.x/(tilewh)-((offsetx/tilewh)))
-                    preoffset=[offsetx,offsety]
+                    went=True
                     if angle<=45 or angle>315:
                         offsetx-=camera_speed
                         direction=1
@@ -550,40 +567,33 @@ while True:
                     else:
                         offsety-=camera_speed
                         direction=4
-                    l_terrain,goback=player.move(l_terrain,direction,A_for_player)
-                    if goback:
-                        offsetx=preoffset[0]
-                        offsety=preoffset[1]
-                    else:
-                        player.time=15
-            else:
-                preoffset=[offsetx,offsety]
-                went=False
-                indexpre1=int(player.y/(tilewh)-offsety/tilewh)
-                indexpre2=int(player.x/(tilewh)-offsetx/tilewh)
-                if keys[pygame.K_d]:
+            if keys[pygame.K_d]:
+                if went==False:
                     offsetx-=camera_speed
                     went=True
                     direction=1
-                elif keys[pygame.K_s]:
+            elif keys[pygame.K_s]:
+                if went==False:
                     offsety-=camera_speed
                     went=True
                     direction=4
-                elif keys[pygame.K_a]:
+            elif keys[pygame.K_a]:
+                if went==False:
                     offsetx+=camera_speed
                     went=True
                     direction=3
-                elif keys[pygame.K_w]:
+            elif keys[pygame.K_w]:
+                if went==False:
                     direction=2
                     offsety+=camera_speed
                     went=True
-                if went==True:
-                    l_terrain,goback=player.move(l_terrain,direction,A_for_player)
-                    if goback:
-                        offsetx=preoffset[0]
-                        offsety=preoffset[1]
-                    else:
-                        player.time=15
+            if went==True:
+                l_terrain,goback=player.move(l_terrain,direction,A_for_player)
+                if goback:
+                    offsetx=preoffset[0]
+                    offsety=preoffset[1]
+                else:
+                    player.time=15
         
         if keys[pygame.K_ESCAPE]:
             break
@@ -666,12 +676,16 @@ while True:
     pygame.display.update()
     clock.tick(60)
     SVAKIH30+=1
+    if SVAKIH30==15:
+        print(l_terrain)
     if SVAKIH30==30:
+        print(l_terrain)
         SVAKIH30=0
         if time.time()-vremepre>najvecivreme:
             najvecivreme=time.time()-vremepre
-        print(time.time()-vremepre)
+        
+        #print(time.time()-vremepre)
         vremepre=time.time()
     
-print(najvecivreme)
-print(30/najvecivreme)
+#print(najvecivreme)
+#print(30/najvecivreme)
