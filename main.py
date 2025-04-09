@@ -162,6 +162,7 @@ class Terrain:
                 else:
                     if j*(tilewh)+offsetx+camerax>-1+-tilewh and j*(tilewh)+offsetx+camerax<WIDTH and i*(tilewh)+offsety+cameray>-1+-tilewh and i*(tilewh)+cameray+offsety<=HEIGHT and s.img!="":
                         window.blit(s.img,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
+                        window.blit()
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
@@ -378,7 +379,8 @@ class Game_bar:
     def general(s):
         pygame.draw.rect(window,(50,50,50),pygame.Rect(0,0,WIDTH,tilewh))
         pygame.draw.rect(window,(0,0,0),pygame.Rect(0+tilewh/10,0+tilewh/10,WIDTH-tilewh/5,tilewh-tilewh/5))
-        window.blit(s.daimonds_to_collect,(WIDTH/2-tilewh*1.5,0))
+        window.blit(s.daimonds_to_collect,(WIDTH/2-tilewh*1.5-tilewh,0))
+        window.blit(loaded[4],(WIDTH/2-tilewh*1.5,0))
         window.blit(s.timer,(WIDTH/2+tilewh/2,0))
     def change_d(s):
         if l_level[level-1][0]-diamonds<=0:
@@ -465,6 +467,8 @@ class Player:
                             map[indexpre1][indexpre2-2]="b"
                             l_boulders[iboulder].x-=tilewh
                             goback=False
+        elif terraincheck=="v" and dooropen==True:
+            prozor=0
         return map,goback
 def replace_at(s, index, new_char):
     s[index[0]]=new_char
@@ -480,14 +484,27 @@ for i in range(len(l_terrain)):
         if l_terrain[i][j]=="g":
             l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
 class Button:
-    def __init__(s,x,y,img,purpose):
+    def __init__(s,x,y,img,purpose,prozor):
         s.x=x
         s.y=y
         s.img=loaded[img]
         s.purpose=purpose
-    def draw(s):
-        window.blit(s.img,(s.x,s.ys))
-
+        s.prozor=prozor
+        s.x-=s.img.get_width()/2
+        s.y-=s.img.get_height()/2
+    def genearl(s):
+        if s.prozor==prozor:
+            window.blit(s.img,(s.x,s.y))
+height5=HEIGHT/5
+width2=WIDTH/2
+l_buttons=[
+    Button(width2,height5*1.5,11,1,0),
+    Button(width2,height5*2.5,12,1,0),
+    Button(width2,height5*3.5,12,-2,0)
+    
+    
+    
+]
 def background(img):
     window.blit(img,(0,0))
 A_for_player=False
@@ -673,19 +690,18 @@ while True:
         else:
             prozor=0
             deathtime=300
+    for i in range(len(l_buttons)):
+        l_buttons[i].genearl()
     pygame.display.update()
     clock.tick(60)
     SVAKIH30+=1
-    if SVAKIH30==15:
-        print(l_terrain)
     if SVAKIH30==30:
-        print(l_terrain)
         SVAKIH30=0
         if time.time()-vremepre>najvecivreme:
             najvecivreme=time.time()-vremepre
         
-        #print(time.time()-vremepre)
+        print(time.time()-vremepre)
         vremepre=time.time()
     
-#print(najvecivreme)
-#print(30/najvecivreme)
+print(najvecivreme)
+print(30/najvecivreme)
