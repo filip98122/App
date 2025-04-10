@@ -139,6 +139,9 @@ class Terrain:
         for i in range(len(map)):
             for j in range(len(map[i])):
                 s.img=""
+                s.img1=""
+                if trans[i][j]=="w":
+                    s.img1=loaded[3]
                 if l_terrain[i][j]=="d":
                     s.img=loaded[1]
                 if l_terrain[i][j]=="p":
@@ -162,7 +165,11 @@ class Terrain:
                 else:
                     if j*(tilewh)+offsetx+camerax>-1+-tilewh and j*(tilewh)+offsetx+camerax<WIDTH and i*(tilewh)+offsety+cameray>-1+-tilewh and i*(tilewh)+cameray+offsety<=HEIGHT and s.img!="":
                         window.blit(s.img,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
-                        window.blit()
+                    if j*(tilewh)+offsetx+camerax>-1+-tilewh and j*(tilewh)+offsetx+camerax<WIDTH and i*(tilewh)+offsety+cameray>-1+-tilewh and i*(tilewh)+cameray+offsety<=HEIGHT and s.img1!="":
+                        window.blit(s.img1,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
+                    killtranssquare=random.randint(1,20)
+                    if killtranssquare==1:
+                        trans[i][j]=" "
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
@@ -411,6 +418,11 @@ class Player:
     def move(s,map,direction,A):
         global cameray
         global camerax
+        global l_boulders
+        global l_gems
+        global l_explosions
+        global offsetx
+        global offsety
         if camerax!=0 or cameray!=0:
             camerax=0
             cameray=0
@@ -468,7 +480,8 @@ class Player:
                             l_boulders[iboulder].x-=tilewh
                             goback=False
         elif terraincheck=="v" and dooropen==True:
-            prozor=0
+            goback=False
+            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel()
         return map,goback
 def replace_at(s, index, new_char):
     s[index[0]]=new_char
@@ -508,7 +521,77 @@ l_buttons=[
 def background(img):
     window.blit(img,(0,0))
 A_for_player=False
+def create_trans(listt:list):
+    trans=[]
+    for i in range(len(listt)):
+        red=[]
+        for j in range(len(listt[i])):
+            if listt[i][j]=="p":
+                red.append(" ")
+                continue
+            red.append("w")
+        trans.append(red)
+    return trans
 
+trans=create_trans(l_terrain)
+for i in range(len(trans)):
+    for j in range(len(trans[i])):
+        trans[i][j]=" "
+def nextlevel():
+    global l_boulders
+    global l_explosions
+    global l_gems
+    global l_terrain
+    global level
+    global seconds
+    global prozor
+    global player
+    global trans
+    global offsetx
+    global offsety
+    global bar
+    global diamonds
+    global dooropen
+    global elapsed_time
+    elapsed_time=0
+    
+    
+    
+    seconds=0
+    level+=1
+    prozor=1
+    if level==len(l_level)+1:
+        prozor=0
+        level-=1
+    l_terrain=l_level[level-1][2]
+    
+    trans=create_trans(l_terrain)
+    l_boulders=[]
+    l_explosions=[]
+    l_gems=[]
+    
+    
+    l_boulders=[]
+
+    for i in range(len(l_terrain)):
+        for j in range(len(l_terrain[i])):
+            if l_terrain[i][j]=="p":
+                player=Player(j*(tilewh),i*(tilewh))
+            if l_terrain[i][j]=="b":
+                l_boulders.append(Boulder(j*(tilewh),i*(tilewh)))
+            if l_terrain[i][j]=="g":
+                l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
+    
+    
+
+    dooropen=False
+    diamonds=0
+    bar=Game_bar()
+    offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
+    offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
+    player.x=((WIDTH/2)/tilewh)*tilewh
+    player.y=((HEIGHT/2)/tilewh)*tilewh
+    return l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx
 prozor=1
 offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
 offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
