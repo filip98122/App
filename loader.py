@@ -22,7 +22,11 @@ class Loader:
         loaded[11]=pygame.transform.scale(pygame.image.load("textures/play.png"),(tilewh*7,tilewh*3))
         loaded[12]=pygame.transform.scale(pygame.image.load("textures/continue.png"),(tilewh*7,tilewh*3))
         loaded[13]=pygame.transform.scale(pygame.image.load("textures/options.png"),(tilewh*7,tilewh*3))
-
+        loaded[14]=pygame.transform.scale(pygame.image.load("textures/bar.png"),(tilewh*14,tilewh*1.5))
+        loaded[15]=pygame.transform.scale(pygame.image.load("textures/dot.png"),(loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545),loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545)))
+        loaded[16]=pygame.transform.scale(pygame.image.load("textures/enemy.png"),(tilewh,tilewh))
+        loaded["music"]=pygame.mixer.Sound("textures/Game music.mp3")
+        
         return loaded
 loader=Loader()
 loaded=loader.load()

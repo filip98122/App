@@ -15,6 +15,7 @@ def end():
     return decrypted_data1
 camerax=0
 cameray=0
+
 def collison(x1,y1,r1,x2,y2,r2):
     dx = x2 - x1
     dy = y2 - y1
@@ -29,15 +30,19 @@ def collision1(rect1 : pygame.Rect,rect2 : pygame.Rect):
     if rect1.colliderect(rect2):
         return True
     return False
-
+def Boolflip(var):
+    if var==False:
+        var=True
+    else:
+        var=False
+    return var
 #char ="!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-
 def read():
     info=end()
     return info
-
-def write(info):
-    info={'diamonds': 0, 'username': '',}
+info=read()
+settings=info["settings"]
+def save(info):
     ens(info)
 
 
@@ -79,6 +84,14 @@ def checker(keys,index):
         return index
 
 
+def list_button_class_collision(index,list):
+    """Collides the clicking of the would-be button given in the list, has to be a class with a self.x, self.y,  self.width and a self.height"""
+    if mousePos[0] > list[index].x and mousePos[0] < list[index].x + list[index].width and mousePos[1] > list[index].y and list[index].mousePos[1] < list[index].y + list[index].height and mouseState[0] == True:
+        return True
+    else:
+        return False
+
+
 def Vector_Normalization(x1, y1, x2, y2):
     # Calculate dx and dy with direction
     distancex = x2 - x1
@@ -97,9 +110,79 @@ def get_angle(dx,dy):
 
 vremepre=time.time()
 najvecivreme=0
+subset=0
 
+class Setting:
+    def __init__(s,x,y,sub,img,truefalse,text,percent):
+        s.x=x
+        s.y=y
+        s.txt=text
+        s.sub=sub
+        s.img=img
+        s.percent=percent
+        s.truefalse=truefalse
+        s.t=loaded["font"].render(text,False,(255,255,255))
+        s.text=pygame.transform.scale(s.t,(len(text)*(tilewh/3),s.img.get_height()-(s.img.get_height()/4.5)-(s.img.get_height()/8)))
+        s.x-=s.img.get_width()
+    def general(s):
+        
+        if s.sub==subset:
+            da=0
+            if s.truefalse==True:
+                if button_colision(s.img.get_width()/2,s.img.get_height(),s.x,s.y,mousePos,mouseState):
+                    newpercent=0
+                    da=1
+                elif button_colision(s.img.get_width(),s.img.get_height(),s.x,s.y,mousePos,mouseState):
+                    newpercent=100
+                    da=1
+            for i in range(101):
+                xdot=s.x+i*((s.img.get_width()-((s.img.get_width()/19.5)*2))/100)+(s.img.get_width()/19.5)
+                ydot=s.y+(s.img.get_height()/2.545454545454545)
+                widthdot=(s.img.get_width()-((s.img.get_width()/19.5)*2))/100
+                heightdot=s.img.get_height()-(s.img.get_height()/4+s.img.get_height()/2.545454545454545)
+                if i<s.percent or s.percent==100 and i!=100:
+                    pygame.draw.rect(window,(255,0,0),pygame.Rect(xdot,ydot,widthdot,heightdot))
+                    if i+1==s.percent:
+                        window.blit(loaded[15],(xdot-widthdot/2,ydot))
+                if s.percent==0 and i == 0:
+                    window.blit(loaded[15],(xdot-widthdot/2,ydot))
+                if button_colision((s.img.get_width()-((s.img.get_width()/19.5)*2)),(s.img.get_height()-(s.img.get_height()/4+s.img.get_height()/2.545454545454545)),s.x+i*((s.img.get_width()-((s.img.get_width()/19.5)*2))/100)+(s.img.get_width()/19.5),(s.y+(s.img.get_height()/2.545454545454545))+(s.img.get_height()-(s.img.get_height()/4+s.img.get_height()/2.545454545454545))/2,mousePos,mouseState) and s.truefalse==False:
+                    newpercent=i
+                    da=1
+            if da==1:
+                s.percent=newpercent
+                if s.truefalse:
+                    if s.txt=="Fast game":
+                        if s.percent==0:
+                            settings[s.txt]=1
+                        else:
+                            settings[s.txt]=2
+                    elif s.txt=="Hardcore":
+                        if s.percent==0:
+                            settings[s.txt]=False
+                        else:
+                            settings[s.txt]=True
+                    else:
+                        settings[s.txt]=True
+                else:
+                    settings[s.txt]=s.percent
+            window.blit(s.text,(max(0,(s.x/2)-(s.text.get_width()/2)),s.y+(s.img.get_height()-(s.img.get_height()/4.5)-(s.img.get_height()/8))/2))
+            window.blit(s.img,(s.x,s.y))
+if info["settings"]["Fast game"]==1:
+    fast=0
+else:
+    fast=100
+if info["settings"]["Hardcore"]==False:
+    hard=0
+else:
+    hard=100
 
-
+l_settings=[
+    Setting(WIDTH,tilewh*3,0,loaded[14],False,"Music",info["settings"]["Music"]),
+    Setting(WIDTH,tilewh*7,0,loaded[14],True,"Fast game",fast),
+    Setting(WIDTH,tilewh*11,0,loaded[14],True,"Hardcore",hard)
+]
+                    
 l_explosions=[]
 
 class Explosion:
@@ -125,8 +208,8 @@ class Explosion:
                     elif terrainexplosion=="g":
                         gemindex=find_gems((base2+j)*tilewh,(base1+i)*tilewh)
                         if l_gems[gemindex].explodid_spawn==False and l_gems[gemindex].x!=base2*tilewh and l_gems[gemindex].y !=base1*tilewh:
-                            l_explosions.append(Explosion(base2+j,base1+i   ,30))
-                            l_gems[gemindex].explodid_spawn=True
+                            l_explosions.append(Explosion(base2+j,base1+i   ,30/gamespeed))
+                        l_gems[gemindex].explodid_spawn=True
                     elif terrainexplosion!="w" and terrainexplosion!="v":
                         map[base1+i][base2+j]="g"
                         l_gems.append(Diamond((base2+j)*tilewh,(base1+i)*tilewh,True))
@@ -140,8 +223,17 @@ class Terrain:
             for j in range(len(map[i])):
                 s.img=""
                 s.img1=""
+                if trans[i][j]=="d":
+                    s.img1=loaded[1]
+                if trans[i][j]=="p":
+                    s.img1=loaded[0]
+                if trans[i][j]=="b":
+                    s.img1=loaded[2]
                 if trans[i][j]=="w":
                     s.img1=loaded[3]
+                if trans[i][j]=="g":
+                    s.img1=loaded[4]
+                
                 if l_terrain[i][j]=="d":
                     s.img=loaded[1]
                 if l_terrain[i][j]=="p":
@@ -173,6 +265,7 @@ class Terrain:
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
+lives=3
 diamonds=0
 terrain=Terrain()
 camera_speed=tilewh
@@ -181,12 +274,13 @@ l_gems=[]
 deathtime=300
 offsetx=0
 offsety=0
+gamespeed=1
 class Diamond:
     def __init__(s,x,y,explod):
         s.x=x
         s.y=y
         s.Falling=False
-        s.again=20
+        s.again=20/gamespeed
         s.time=s.again
         s.alive=True
         s.explodid_spawn=explod
@@ -278,15 +372,29 @@ def die():
     window.blit(loaded[9],((WIDTH/2)-(loaded[9].get_width()/2),0))
 
 
-
-
+class Enemy:
+    def __init__(s,x,y):
+        s.x=x
+        s.y=y
+        s.img=loaded[16]
+        s.direction=0
+    def find_path(s):
+        orignalx=s.x
+        orignaly=s.y
+        pos=terrain[s.y/tilewh][s.x/tilewh]
+        up=terrain[s.y/tilewh-1][s.x/tilewh]
+        down=terrain[s.y/tilewh+1][s.x/tilewh]
+        left=terrain[s.y/tilewh][s.x/tilewh-1]
+        right=terrain[s.y/tilewh][s.x/tilewh+1]
+        if s.direction==0:
+            pass
 class Boulder:
     def __init__(s,x,y):
         s.x=x
         s.y=y
         s.waittumble=0
         s.Falling=False
-        s.again=20
+        s.again=20/gamespeed
         s.time=s.again
         s.alive=True
     def move(s,map):
@@ -346,10 +454,11 @@ class Boulder:
                     base1=int(s.y/(tilewh)+1)
                     base2=int(s.x/(tilewh))
                     if l_gems[ispodindex].Falling==False:
-                        l_gems[ispodindex].explodid_spawn=True
-                        l_explosions.append(Explosion(base2,base1,0))
+                        if s.time==0:
+                            l_gems[ispodindex].explodid_spawn=True
+                            l_explosions.append(Explosion(base2,base1,0))
                 else:
-                    need==True
+                    need=True
                     if s.time==0:
                         ispodindex=find_gems(s.x,s.y+tilewh)
                         if l_gems[ispodindex].Falling==False:
@@ -381,14 +490,18 @@ class Game_bar:
     def __init__(s):
         s.x=0
         s.y=0
+        s.color=0
         s.daimonds_to_collect=s.change_d()
         s.timer=s.change_t()
+        s.change=((255/(l_level[level-1][1]+0.5)))
     def general(s):
         pygame.draw.rect(window,(50,50,50),pygame.Rect(0,0,WIDTH,tilewh))
         pygame.draw.rect(window,(0,0,0),pygame.Rect(0+tilewh/10,0+tilewh/10,WIDTH-tilewh/5,tilewh-tilewh/5))
         window.blit(s.daimonds_to_collect,(WIDTH/2-tilewh*1.5-tilewh,0))
         window.blit(loaded[4],(WIDTH/2-tilewh*1.5,0))
+        pygame.draw.rect(window,(min(255,s.color),max(255-s.color,0),0),pygame.Rect(WIDTH/2+tilewh/2,0,s.timer.get_width(),s.timer.get_height()))
         window.blit(s.timer,(WIDTH/2+tilewh/2,0))
+        
     def change_d(s):
         if l_level[level-1][0]-diamonds<=0:
             if l_level[level-1][0]-diamonds==0:
@@ -407,7 +520,7 @@ class Game_bar:
 
 dooropen=False
 seconds=0
-elapsed_time=0
+elapsed_time=900
 bar=Game_bar()
 
 class Player:
@@ -427,7 +540,7 @@ class Player:
             camerax=0
             cameray=0
             goback=True
-            player.time=15
+            player.time=16/gamespeed
             return map,goback
         global diamonds
         terraincheck=map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]
@@ -435,14 +548,14 @@ class Player:
         if A:
             if terraincheck=="d":
                 map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]=" "
-                s.time=15
+                s.time=16/gamespeed
             elif terraincheck=="g":
                 igems=find_gems(s.x-offsetx,s.y-offsety)
                 l_gems[igems].alive=False
                 diamonds+=1
                 bar.daimonds_to_collect=bar.change_d()
                 map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]=" "
-                s.time=15
+                s.time=16/gamespeed
         elif terraincheck=="d" or terraincheck==" ":
             map[indexpre1][indexpre2]=" "
             map[int(s.y/(tilewh)-(offsety/(tilewh)))][int(s.x/(tilewh)-offsetx/(tilewh))]="p"
@@ -497,23 +610,46 @@ for i in range(len(l_terrain)):
         if l_terrain[i][j]=="g":
             l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
 class Button:
-    def __init__(s,x,y,img,purpose,prozor):
+    def __init__(s,x,y,img,purpose,prozor,restart):
         s.x=x
         s.y=y
         s.img=loaded[img]
+        s.restart =restart
         s.purpose=purpose
         s.prozor=prozor
         s.x-=s.img.get_width()/2
         s.y-=s.img.get_height()/2
     def genearl(s):
+        global prozor
         if s.prozor==prozor:
+            global mouseuse
+            if button_colision(s.img.get_width(),s.img.get_height(),s.x,s.y,mousePos,mouseState) and mouseuse:
+                mouseuse=False
+                prozor=s.purpose
+                if s.restart:
+                    global level
+                    level=0
+                    global l_boulders
+                    global l_explosions
+                    global l_gems
+                    global l_terrain
+                    global seconds
+                    global player
+                    global trans
+                    global offsetx
+                    global offsety
+                    global bar
+                    global diamonds
+                    global dooropen
+                    global elapsed_time
+                    l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel()
             window.blit(s.img,(s.x,s.y))
 height5=HEIGHT/5
 width2=WIDTH/2
 l_buttons=[
-    Button(width2,height5*1.5,11,1,0),
-    Button(width2,height5*2.5,12,1,0),
-    Button(width2,height5*3.5,12,-2,0)
+    Button(width2,height5*1.5,11,1,0, True),
+    Button(width2,height5*2.5,12,1,0, False),
+    Button(width2,height5*3.5,13,-2,0,False)
     
     
     
@@ -532,7 +668,7 @@ def create_trans(listt:list):
             red.append("w")
         trans.append(red)
     return trans
-
+musicpos=0
 trans=create_trans(l_terrain)
 for i in range(len(trans)):
     for j in range(len(trans[i])):
@@ -553,7 +689,7 @@ def nextlevel():
     global diamonds
     global dooropen
     global elapsed_time
-    elapsed_time=0
+    elapsed_time=900
     
     
     
@@ -562,8 +698,9 @@ def nextlevel():
     prozor=1
     if level==len(l_level)+1:
         prozor=0
-        level-=1
-    l_terrain=l_level[level-1][2]
+        level=1
+        #game done
+    l_terrain=copy.deepcopy(l_level[level-1][2])
     
     trans=create_trans(l_terrain)
     l_boulders=[]
@@ -592,23 +729,62 @@ def nextlevel():
     player.x=((WIDTH/2)/tilewh)*tilewh
     player.y=((HEIGHT/2)/tilewh)*tilewh
     return l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx
-prozor=1
+prozor=0
 offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
 offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
 player.x=((WIDTH/2)/tilewh)*tilewh
 player.y=((HEIGHT/2)/tilewh)*tilewh
-fps = []
+trans=create_trans(l_terrain)
+mouseuse=True
+escapeuse=True
+timeset = time.time()
+music=loaded["music"]
+
+
+
+
+music.play()
+
+
+musictime=0
+
 while True:
+    window.fill("Black")
+    keys = pygame.key.get_pressed()
+    events = pygame.event.get()
+    mouseState = pygame.mouse.get_pressed()
+    mousePos = pygame.mouse.get_pos()
+    music.set_volume(info["settings"]["Music"]/100)
+    
+    if mouseState[0]==False:
+        mouseuse=True
+    if keys[pygame.K_ESCAPE]==False:
+        escapeuse=True
+    times=clock.get_time()
+    musictime+=times
+    if prozor==1:
+        elapsed_time += times*gamespeed
+    gamespeed=settings["Fast game"]
+    if musictime>=500:
+        musictime-=500
+        musicpos+=1
+        if musicpos==157:
+            
+            music.stop()
+            music.play()
+            musicpos=0
+    if elapsed_time >= 1000:
+        #secondpassed
+        bar.color+=bar.change
+        bar.timer=bar.change_t()
+        seconds+=1
+        elapsed_time -= 1000
+        
     if prozor==1:
         went=False
-        window.fill("Black")
-        keys = pygame.key.get_pressed()
-        events = pygame.event.get()
-        mouseState = pygame.mouse.get_pressed()
-        mousePos = pygame.mouse.get_pos()
         for event in events:
             if event.type == pygame.QUIT:
-                break
+                prozor=0
             if event.type == pygame.JOYBUTTONDOWN:
                 if pygame.joystick.get_count()>0:
                     if event.button==0:
@@ -631,13 +807,7 @@ while True:
                 del l_boulders[indexdelete]
                 indexdelete-=1
             indexdelete+=1
-        elapsed_time += clock.get_time()
 
-        if elapsed_time >= 1000:
-            #secondpassed
-            bar.timer=bar.change_t()
-            seconds+=1
-            elapsed_time -= 1000
         if player.time<=0:
             indexpre1=int(player.y/(tilewh)-((offsety/tilewh)))
             indexpre2=int(player.x/(tilewh)-((offsetx/tilewh)))
@@ -693,10 +863,11 @@ while True:
                     offsetx=preoffset[0]
                     offsety=preoffset[1]
                 else:
-                    player.time=15
+                    player.time=16
         
-        if keys[pygame.K_ESCAPE]:
-            break
+        if keys[pygame.K_ESCAPE] and escapeuse:
+            prozor=0
+            escapeuse=False
         if keys[pygame.K_UP]:
             cameray+=camera_speed/5
         if keys[pygame.K_DOWN]:
@@ -715,7 +886,7 @@ while True:
         
         
         if player.time>-6:
-            player.time-=1
+            player.time-=(1*gamespeed)
         indexdelete=0
         for i in range(len(l_gems)):
             if l_gems[indexdelete].alive==False:
@@ -745,34 +916,32 @@ while True:
         terrain.draw(l_terrain)
         bar.general()
     if prozor==0:
-        window.fill("Black")
         background(loaded[6])
-        keys = pygame.key.get_pressed()
-        events = pygame.event.get()
-        mouseState = pygame.mouse.get_pressed()
-        mousePos = pygame.mouse.get_pos()
         for event in events:
             if event.type == pygame.QUIT:
                 break
-        if keys[pygame.K_ESCAPE]:
+        if keys[pygame.K_ESCAPE] and escapeuse:
+            escapeuse=False
             break
+    if prozor==-2:
+        #background(loaded[6])
+        for event in events:
+            if event.type == pygame.QUIT:
+                prozor=0
+        if keys[pygame.K_ESCAPE] and escapeuse:
+            escapeuse=False
+            prozor=0
+        for i in range(len(l_settings)):
+            l_settings[i].general()
     if prozor==-1:
-        window.fill("Black")
         die()
-        keys = pygame.key.get_pressed()
-        events = pygame.event.get()
-        mouseState = pygame.mouse.get_pressed()
-        mousePos = pygame.mouse.get_pos()
-        for event in events:
-            if event.type == pygame.QUIT:
-                break
-        if keys[pygame.K_ESCAPE]:
-            break
         if deathtime>0:
             deathtime-=1
         else:
-            prozor=0
             deathtime=300
+            level=0
+            l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel()
+            prozor=0
     for i in range(len(l_buttons)):
         l_buttons[i].genearl()
     pygame.display.update()
@@ -785,6 +954,8 @@ while True:
         
         print(time.time()-vremepre)
         vremepre=time.time()
-    
+
 print(najvecivreme)
 print(30/najvecivreme)
+info["settings"]=settings
+save(info)

@@ -4,6 +4,7 @@ import random
 import math
 import time
 import json
+import copy
 from cryptography.fernet import Fernet
 pygame.init()
 pygame.joystick.init()

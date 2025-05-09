@@ -1,4 +1,5 @@
-level1=[15,60,[
+from General_info import *
+level1=[15,127,[
     ["w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w"],
     ["w","b","d","d","d","d","d","d","d","d","d","d","d","d","d","d","d","d","w"],
     ["w","d","d","d","d","d","d","c","d","d","d","b","d","d","d","d","d","d","w"],
@@ -27,7 +28,7 @@ level1=[15,60,[
     ["w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w"],
 ]
 ]
-level2=[18,60,[
+level2=[18,127,[
     ["w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w","w"],
     ["w","d","d","d","d","d","d"," ","d","d","g","d","b"," ","d","d","d","d","d","b","d","b","d","d","d","d","d","d","d"," ","d","d","d","d","b","d","d","d","d","w"],
     ["w","d","b","p","b","d","d","d","d","d","d"," ","d","d","d","d","d","d","d","d","d","b","g","d","d","b","d","d","d","d"," ","d","d","d","d"," ","d","d","d","w"],
@@ -53,7 +54,7 @@ level2=[18,60,[
 ]
 ]
 
-level3=[34,100,[
+level3=[34,127,[
     ["w","w","w","w","w","w","w","w","w","w","w","w","w","w"],
     ["w","g","g","g","g","g","g","g","d","d","d","d","d","w"],
     ["w","g","g","g","g","g","g","g","d","d","d","d","d","w"],
@@ -72,4 +73,4 @@ l_level=[]
 l_level.append(level1)
 l_level.append(level2)
 l_level.append(level3)
-l_terrain=l_level[level-1][2]
+l_terrain=copy.deepcopy(l_level[level-1][2])
