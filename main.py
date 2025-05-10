@@ -182,7 +182,7 @@ l_settings=[
     Setting(WIDTH,tilewh*7,0,loaded[14],True,"Fast game",fast),
     Setting(WIDTH,tilewh*11,0,loaded[14],True,"Hardcore",hard)
 ]
-                    
+
 l_explosions=[]
 
 class Explosion:
@@ -192,7 +192,7 @@ class Explosion:
         s.delay=delay
         s.alive=True
     def general(s,map):
-        global prozor
+        global prozor,l_gems,l_boulders,l_explosions
         if s.delay>0:
             s.delay-=1
         if s.delay==0:
@@ -203,8 +203,16 @@ class Explosion:
                 for j in range(-1,2):
                     terrainexplosion=map[base1+i][base2+j]
                     if terrainexplosion=="p":
-                        pass
-                        prozor=-1
+                        global lives,level
+                        lives-=1
+                        
+                        if info["settings"]["Hardcore"] or lives==0:
+                            prozor=-1
+                        else:
+                            level-=1
+                            global offsetx,offsety
+                            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
+                        
                     elif terrainexplosion=="g":
                         gemindex=find_gems((base2+j)*tilewh,(base1+i)*tilewh)
                         if l_gems[gemindex].explodid_spawn==False and l_gems[gemindex].x!=base2*tilewh and l_gems[gemindex].y !=base1*tilewh:
@@ -274,7 +282,7 @@ l_gems=[]
 deathtime=300
 offsetx=0
 offsety=0
-gamespeed=1
+gamespeed=info["settings"]["Fast game"]
 class Diamond:
     def __init__(s,x,y,explod):
         s.x=x
@@ -286,7 +294,7 @@ class Diamond:
         s.explodid_spawn=explod
     def move(s,map):
         need=False
-        global prozor
+        global prozor,l_gems,l_boulders
         if s.alive:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
             if terraincheck=="d" or terraincheck=="w" or terraincheck=="c" or terraincheck=="v":
@@ -302,7 +310,14 @@ class Diamond:
             elif terraincheck=="p":
                 if s.Falling==True:
                     if s.time==0:
-                        prozor=-1
+                        global lives,level
+                        lives-=1
+                        if info["settings"]["Hardcore"] or lives==0:
+                            prozor=-1
+                        else:
+                            level-=1
+                            global l_explosions,offsetx,offsety
+                            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
                         s.alive=False
             elif terraincheck=="g":
                     if s.Falling==True:
@@ -399,6 +414,7 @@ class Boulder:
         s.alive=True
     def move(s,map):
         global prozor
+        global l_boulders,l_gems,l_explosions
         need=False
         if s.alive==True:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
@@ -415,8 +431,15 @@ class Boulder:
             elif terraincheck=="p":
                 if s.Falling==True:
                     if s.time==0:
-                        pass
-                        prozor=-1
+                        global lives
+                        lives-=1
+                        if info["settings"]["Hardcore"] or lives==0:
+                            prozor=-1
+                        else:
+                            global level
+                            level-=1
+                            global offsetx,offsety
+                            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
                 else:
                     s.Falling=False
                     pass
@@ -513,7 +536,13 @@ class Game_bar:
     def change_t(s):
         global prozor
         if l_level[level-1][1]-seconds<=0:
-            prozor=-1
+            global lives
+            lives-=1
+            if info["settings"]["Hardcore"] or lives==0:
+                prozor=-1
+            else:
+                global l_explosions,offsetx,offsety,l_boulders,l_terrain,l_gems
+                l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
             return s.timer
         return pygame.transform.scale(loaded["font"].render(f"{l_level[level-1][1]-seconds}",False,(255,255,255)),(len(f"{l_level[level-1][1]-seconds}")*(tilewh/3),tilewh))
     
@@ -565,7 +594,14 @@ class Player:
             igems=find_gems(s.x-offsetx,s.y-offsety)
             if l_gems[igems].Falling==True:
                 global prozor
-                prozor=-1
+                global lives,level
+                
+                lives-=1
+                if info["settings"]["Hardcore"] or lives==0:
+                    prozor=-1
+                else:
+                    level-=1
+                    l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
             l_gems[igems].alive=False
             diamonds+=1
             map[indexpre1][indexpre2]=" "
@@ -594,7 +630,7 @@ class Player:
                             goback=False
         elif terraincheck=="v" and dooropen==True:
             goback=False
-            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel()
+            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
         return map,goback
 def replace_at(s, index, new_char):
     s[index[0]]=new_char
@@ -642,7 +678,7 @@ class Button:
                     global diamonds
                     global dooropen
                     global elapsed_time
-                    l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel()
+                    l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
             window.blit(s.img,(s.x,s.y))
 height5=HEIGHT/5
 width2=WIDTH/2
@@ -673,7 +709,7 @@ trans=create_trans(l_terrain)
 for i in range(len(trans)):
     for j in range(len(trans[i])):
         trans[i][j]=" "
-def nextlevel():
+def nextlevel(regen):
     global l_boulders
     global l_explosions
     global l_gems
@@ -689,8 +725,10 @@ def nextlevel():
     global diamonds
     global dooropen
     global elapsed_time
+    global lives
     elapsed_time=900
-    
+    if regen:
+        lives=3
     
     
     seconds=0
@@ -940,7 +978,7 @@ while True:
         else:
             deathtime=300
             level=0
-            l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel()
+            l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
             prozor=0
     for i in range(len(l_buttons)):
         l_buttons[i].genearl()
