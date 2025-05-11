@@ -516,7 +516,10 @@ class Game_bar:
         s.color=0
         s.daimonds_to_collect=s.change_d()
         s.timer=s.change_t()
-        s.change=((255/(l_level[level-1][1]+0.5)))
+        s.change=255/l_level[level-1][1]
+        if l_level[level-1][1]==127:
+            s.change=((255/(l_level[level-1][1]+0.5)))
+        
     def general(s):
         pygame.draw.rect(window,(50,50,50),pygame.Rect(0,0,WIDTH,tilewh))
         pygame.draw.rect(window,(0,0,0),pygame.Rect(0+tilewh/10,0+tilewh/10,WIDTH-tilewh/5,tilewh-tilewh/5))
