@@ -218,7 +218,7 @@ class Explosion:
                         if l_gems[gemindex].explodid_spawn==False and l_gems[gemindex].x!=base2*tilewh and l_gems[gemindex].y !=base1*tilewh:
                             l_explosions.append(Explosion(base2+j,base1+i   ,30/gamespeed))
                         l_gems[gemindex].explodid_spawn=True
-                    elif terrainexplosion!="w" and terrainexplosion!="v":
+                    elif terrainexplosion!="#" and terrainexplosion!="v":
                         map[base1+i][base2+j]="g"
                         l_gems.append(Diamond((base2+j)*tilewh,(base1+i)*tilewh,True))
                     if terrainexplosion=="b":
@@ -237,7 +237,7 @@ class Terrain:
                     s.img1=loaded[0]
                 if trans[i][j]=="b":
                     s.img1=loaded[2]
-                if trans[i][j]=="w":
+                if trans[i][j]=="#":
                     s.img1=loaded[3]
                 if trans[i][j]=="g":
                     s.img1=loaded[4]
@@ -248,7 +248,7 @@ class Terrain:
                     s.img=loaded[0]
                 if l_terrain[i][j]=="b":
                     s.img=loaded[2]
-                if l_terrain[i][j]=="w":
+                if l_terrain[i][j]=="#":
                     s.img=loaded[3]
                 if l_terrain[i][j]=="g":
                     s.img=loaded[4]
@@ -297,7 +297,7 @@ class Diamond:
         global prozor,l_gems,l_boulders
         if s.alive:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
-            if terraincheck=="d" or terraincheck=="w" or terraincheck=="c" or terraincheck=="v":
+            if terraincheck=="d" or terraincheck=="#" or terraincheck=="c" or terraincheck=="v":
                 s.Falling=False
             elif terraincheck==" ":
                 need=True
@@ -418,7 +418,7 @@ class Boulder:
         need=False
         if s.alive==True:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
-            if terraincheck=="d" or terraincheck=="w" or terraincheck=="c" or terraincheck=="v":
+            if terraincheck=="d" or terraincheck=="#" or terraincheck=="c" or terraincheck=="v":
                 s.Falling=False
             elif terraincheck==" ":
                 need=True
@@ -704,7 +704,7 @@ def create_trans(listt:list):
             if listt[i][j]=="p":
                 red.append(" ")
                 continue
-            red.append("w")
+            red.append("#")
         trans.append(red)
     return trans
 musicpos=0
