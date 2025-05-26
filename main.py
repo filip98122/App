@@ -203,22 +203,14 @@ class Explosion:
                 for j in range(-1,2):
                     terrainexplosion=map[base1+i][base2+j]
                     if terrainexplosion=="p":
-                        global lives,level
-                        lives-=1
-                        
-                        if info["settings"]["Hardcore"] or lives==0:
-                            prozor=-1
-                        else:
-                            level-=1
-                            global offsetx,offsety
-                            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
-                        
+                        global restart
+                        restart+=1
                     elif terrainexplosion=="g":
                         gemindex=find_gems((base2+j)*tilewh,(base1+i)*tilewh)
                         if l_gems[gemindex].explodid_spawn==False and l_gems[gemindex].x!=base2*tilewh and l_gems[gemindex].y !=base1*tilewh:
                             l_explosions.append(Explosion(base2+j,base1+i   ,30/gamespeed))
                         l_gems[gemindex].explodid_spawn=True
-                    elif terrainexplosion!="#" and terrainexplosion!="v":
+                    elif terrainexplosion!="+" and terrainexplosion!="v":
                         map[base1+i][base2+j]="g"
                         l_gems.append(Diamond((base2+j)*tilewh,(base1+i)*tilewh,True))
                     if terrainexplosion=="b":
@@ -237,7 +229,7 @@ class Terrain:
                     s.img1=loaded[0]
                 if trans[i][j]=="b":
                     s.img1=loaded[2]
-                if trans[i][j]=="#":
+                if trans[i][j]=="+":
                     s.img1=loaded[3]
                 if trans[i][j]=="g":
                     s.img1=loaded[4]
@@ -248,7 +240,7 @@ class Terrain:
                     s.img=loaded[0]
                 if l_terrain[i][j]=="b":
                     s.img=loaded[2]
-                if l_terrain[i][j]=="#":
+                if l_terrain[i][j]=="+":
                     s.img=loaded[3]
                 if l_terrain[i][j]=="g":
                     s.img=loaded[4]
@@ -269,7 +261,32 @@ class Terrain:
                         window.blit(s.img1,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
                     killtranssquare=random.randint(1,20)
                     if killtranssquare==1:
-                        trans[i][j]=" "
+                        trans[i][j]="."
+    def draw_for_helper(s,l_terrain):
+        global camerax
+        global cameray
+        for i in range(len(l_terrain)):
+            for j in range(len(l_terrain[i])):
+                s.img=""
+                if l_terrain[i][j]=="d":
+                    s.img=loaded[1]
+                if l_terrain[i][j]=="p":
+                    s.img=loaded[0]
+                if l_terrain[i][j]=="b":
+                    s.img=loaded[2]
+                if l_terrain[i][j]=="+":
+                    s.img=loaded[3]
+                if l_terrain[i][j]=="g":
+                    s.img=loaded[4]
+                if l_terrain[i][j]=="v":
+                    if dooropen==False:
+                        s.img=loaded[5]
+                    else:
+                        s.img=loaded[8]
+                if l_terrain[i][j]=="c":
+                    s.img=loaded[7]
+                if s.img!="":
+                    window.blit(s.img,(j*tilewh+camerax,i*tilewh+cameray))
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
@@ -297,27 +314,21 @@ class Diamond:
         global prozor,l_gems,l_boulders
         if s.alive:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
-            if terraincheck=="d" or terraincheck=="#" or terraincheck=="c" or terraincheck=="v":
+            if terraincheck=="d" or terraincheck=="+" or terraincheck=="c" or terraincheck=="v":
                 s.Falling=False
-            elif terraincheck==" ":
+            elif terraincheck==".":
                 need=True
                 if s.time==0:
                     map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="g"
-                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                     s.y+=(tilewh)
                     s.time=s.again
                     s.Falling=True
             elif terraincheck=="p":
                 if s.Falling==True:
                     if s.time==0:
-                        global lives,level
-                        lives-=1
-                        if info["settings"]["Hardcore"] or lives==0:
-                            prozor=-1
-                        else:
-                            level-=1
-                            global l_explosions,offsetx,offsety
-                            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
+                        global restart
+                        restart+=1
                         s.alive=False
             elif terraincheck=="g":
                     if s.Falling==True:
@@ -333,20 +344,20 @@ class Diamond:
                                 levodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))-1]
                                 desno=map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]
                                 desnodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))+1]
-                                if levo==" " and levodole==" ":
+                                if levo=="." and levodole==".":
                                     need=True
                                     if s.time==0:
                                         map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]="g"
-                                        map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                        map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                         s.Falling=True
                                         s.x-=tilewh
                                         s.time=s.again
-                                elif desno==" ":
-                                    if desnodole==" ":
+                                elif desno==".":
+                                    if desnodole==".":
                                         need=True
                                         if s.time==0:
                                             map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]="g"
-                                            map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                            map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                             s.Falling=True
                                             s.x+=tilewh
                                             s.time=s.again
@@ -365,16 +376,16 @@ class Diamond:
                                 levodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))-1]
                                 desno=map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]
                                 desnodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))+1]
-                                if levo==" " and levodole==" ":
+                                if levo=="." and levodole==".":
                                     map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]="g"
-                                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                     s.Falling=True
                                     s.x-=tilewh
                                     s.time=s.again
-                                elif desno==" ":
-                                    if desnodole==" ":
+                                elif desno==".":
+                                    if desnodole==".":
                                         map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]="g"
-                                        map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                        map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                         s.Falling=True
                                         s.x+=tilewh
                                         s.time=s.again
@@ -418,28 +429,21 @@ class Boulder:
         need=False
         if s.alive==True:
             terraincheck=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]
-            if terraincheck=="d" or terraincheck=="#" or terraincheck=="c" or terraincheck=="v":
+            if terraincheck=="d" or terraincheck=="+" or terraincheck=="c" or terraincheck=="v":
                 s.Falling=False
-            elif terraincheck==" ":
+            elif terraincheck==".":
                 need=True
                 if s.time==0:
                     map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="b"
-                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                     s.y+=(tilewh)
                     s.Falling=True
                     s.time=s.again
             elif terraincheck=="p":
                 if s.Falling==True:
                     if s.time==0:
-                        global lives
-                        lives-=1
-                        if info["settings"]["Hardcore"] or lives==0:
-                            prozor=-1
-                        else:
-                            global level
-                            level-=1
-                            global offsetx,offsety
-                            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
+                        global restart
+                        restart+=1
                 else:
                     s.Falling=False
                     pass
@@ -458,16 +462,16 @@ class Boulder:
                                 levodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))-1]
                                 desno=map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]
                                 desnodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))+1]
-                                if levo==" " and levodole==" ":
+                                if levo=="." and levodole==".":
                                     map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]="b"
-                                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                     s.Falling=True
                                     s.x-=tilewh
                                     s.time=s.again
-                                elif desno==" ":
-                                    if desnodole==" ":
+                                elif desno==".":
+                                    if desnodole==".":
                                         map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]="b"
-                                        map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                        map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                         s.Falling=True
                                         s.x+=tilewh
                                         s.time=s.again
@@ -489,16 +493,16 @@ class Boulder:
                             levodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))-1]
                             desno=map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]
                             desnodole=map[int(s.y/(tilewh))+1][int(s.x/(tilewh))+1]
-                            if levo==" " and levodole==" ":
+                            if levo=="." and levodole==".":
                                 map[int(s.y/(tilewh))][int(s.x/(tilewh))-1]="b"
-                                map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                 s.Falling=True
                                 s.x-=tilewh
                                 s.time=s.again
-                            elif desno==" ":
-                                if desnodole==" ":
+                            elif desno==".":
+                                if desnodole==".":
                                     map[int(s.y/(tilewh))][int(s.x/(tilewh))+1]="b"
-                                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]=" "
+                                    map[int(s.y/(tilewh))][int(s.x/(tilewh))]="."
                                     s.Falling=True
                                     s.x+=tilewh
                                     s.time=s.again
@@ -539,13 +543,8 @@ class Game_bar:
     def change_t(s):
         global prozor
         if l_level[level-1][1]-seconds<=0:
-            global lives
-            lives-=1
-            if info["settings"]["Hardcore"] or lives==0:
-                prozor=-1
-            else:
-                global l_explosions,offsetx,offsety,l_boulders,l_terrain,l_gems
-                l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
+            global restart
+            restart+=1
             return s.timer
         return pygame.transform.scale(loaded["font"].render(f"{l_level[level-1][1]-seconds}",False,(255,255,255)),(len(f"{l_level[level-1][1]-seconds}")*(tilewh/3),tilewh))
     
@@ -554,7 +553,7 @@ dooropen=False
 seconds=0
 elapsed_time=900
 bar=Game_bar()
-
+restart=0
 class Player:
     def __init__(s,x,y):
         s.x=x
@@ -579,55 +578,48 @@ class Player:
         goback=True
         if A:
             if terraincheck=="d":
-                map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]=" "
+                map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]="."
                 s.time=16/gamespeed
             elif terraincheck=="g":
                 igems=find_gems(s.x-offsetx,s.y-offsety)
                 l_gems[igems].alive=False
                 diamonds+=1
                 bar.daimonds_to_collect=bar.change_d()
-                map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]=" "
+                map[int(s.y/tilewh-(offsety/tilewh))][int(s.x/tilewh-offsetx/tilewh)]="."
                 s.time=16/gamespeed
-        elif terraincheck=="d" or terraincheck==" ":
-            map[indexpre1][indexpre2]=" "
+        elif terraincheck=="d" or terraincheck==".":
+            map[indexpre1][indexpre2]="."
             map[int(s.y/(tilewh)-(offsety/(tilewh)))][int(s.x/(tilewh)-offsetx/(tilewh))]="p"
             goback=False
         elif terraincheck=="g":
             goback=False
             igems=find_gems(s.x-offsetx,s.y-offsety)
             if l_gems[igems].Falling==True:
-                global prozor
-                global lives,level
-                
-                lives-=1
-                if info["settings"]["Hardcore"] or lives==0:
-                    prozor=-1
-                else:
-                    level-=1
-                    l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
+                global restart
+                restart+=1
             l_gems[igems].alive=False
             diamonds+=1
-            map[indexpre1][indexpre2]=" "
+            map[indexpre1][indexpre2]="."
             map[int(s.y/(tilewh)-(offsety/(tilewh)))][int(s.x/(tilewh)-offsetx/(tilewh))]="p"
             bar.daimonds_to_collect=bar.change_d()
             
         elif terraincheck=="b":
             if s.time==-6:
                 if direction==1:
-                    if map[indexpre1][indexpre2+2]==" ":
+                    if map[indexpre1][indexpre2+2]==".":
                         iboulder=find_boulder((indexpre2+1)*tilewh,indexpre1*tilewh)
                         if l_boulders[iboulder].Falling==False:
                             map[indexpre1][indexpre2+1]="p"
-                            map[indexpre1][indexpre2] = " "
+                            map[indexpre1][indexpre2] = "."
                             map[indexpre1][indexpre2+2]="b"
                             l_boulders[iboulder].x +=tilewh
                             goback=False
                 elif direction==3:
-                    if map[indexpre1][indexpre2-2]==" ":
+                    if map[indexpre1][indexpre2-2]==".":
                         iboulder=find_boulder((indexpre2-1)*tilewh,indexpre1*tilewh)
                         if l_boulders[iboulder].Falling==False:
                             map[indexpre1][indexpre2-1]="p"
-                            map[indexpre1][indexpre2]=" "
+                            map[indexpre1][indexpre2]="."
                             map[indexpre1][indexpre2-2]="b"
                             l_boulders[iboulder].x-=tilewh
                             goback=False
@@ -702,16 +694,16 @@ def create_trans(listt:list):
         red=[]
         for j in range(len(listt[i])):
             if listt[i][j]=="p":
-                red.append(" ")
+                red.append(".")
                 continue
-            red.append("#")
+            red.append("+")
         trans.append(red)
     return trans
 musicpos=0
 trans=create_trans(l_terrain)
 for i in range(len(trans)):
     for j in range(len(trans[i])):
-        trans[i][j]=" "
+        trans[i][j]="."
 def nextlevel(regen):
     global l_boulders
     global l_explosions
@@ -785,8 +777,8 @@ music=loaded["music"]
 
 
 music.play()
-
-
+exitsde=False
+zamena=" "
 musictime=0
 
 while True:
@@ -956,14 +948,64 @@ while True:
             indexdelete+=1
         terrain.draw(l_terrain)
         bar.general()
+        if restart>0:
+            restart=0
+            lives-=1
+            if info["settings"]["Hardcore"] or lives==0:
+                prozor=-1
+            else:
+                level-=1
+                l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
     if prozor==0:
         background(loaded[6])
         for event in events:
             if event.type == pygame.QUIT:
-                break
+                exitsde=True
+        if exitsde:
+            exitsde=False
+            break
+        if keys[pygame.K_q] and keys[pygame.K_w] and keys[pygame.K_e]:
+            prozor=-10
         if keys[pygame.K_ESCAPE] and escapeuse:
             escapeuse=False
             break
+    if prozor==-10:
+        if keys[pygame.K_UP]:
+            cameray+=camera_speed/5
+        if keys[pygame.K_DOWN]:
+            cameray-=camera_speed/5
+        if keys[pygame.K_RIGHT]:
+            camerax-=camera_speed/5
+        if keys[pygame.K_LEFT]:
+            camerax+=camera_speed/5
+        terrain.draw_for_helper(l_terrain)
+        if keys[pygame.K_d]:
+            zamena="d"
+        if keys[pygame.K_p]:
+            zamena="p"
+        if keys[pygame.K_b]:
+            zamena="b"
+        if keys[pygame.K_w]:
+            zamena="+"
+        if keys[pygame.K_g]:
+            zamena="g"
+        if keys[pygame.K_v]:
+            zamena="v"
+        if keys[pygame.K_c]:
+            zamena="c"
+        if keys[pygame.K_SPACE]:
+            zamena=" "
+        if mouseState[0]==True:
+            for i in range(len(l_terrain)):
+                for j in range(len(l_terrain[i])):
+                    if j*tilewh<=mousePos[0]-camerax and tilewh*(j+1)>mousePos[0]-camerax and i*tilewh<=mousePos[1]-cameray and tilewh*(i+1)>mousePos[1]-cameray:
+                        l_terrain[i][j]=zamena
+        if keys[pygame.K_ESCAPE]:
+            acronym=input()
+            if acronym!="n":
+                writeintxt(l_terrain,acronym)
+            prozor=0
+            escapeuse=False
     if prozor==-2:
         #background(loaded[6])
         for event in events:
