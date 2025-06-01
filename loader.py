@@ -26,7 +26,7 @@ class Loader:
         loaded[15]=pygame.transform.scale(pygame.image.load("textures/dot.png"),(loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545),loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545)))
         loaded[16]=pygame.transform.scale(pygame.image.load("textures/enemy.png"),(tilewh,tilewh))
         loaded["music"]=pygame.mixer.Sound("textures/Game music.mp3")
-        
+        loaded["map"]=pygame.transform.scale(pygame.image.load("textures/map.png"),(WIDTH,HEIGHT))
         return loaded
 loader=Loader()
 loaded=loader.load()

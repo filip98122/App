@@ -287,9 +287,12 @@ class Terrain:
                     s.img=loaded[7]
                 if s.img!="":
                     window.blit(s.img,(j*tilewh+camerax,i*tilewh+cameray))
+        if show:
+            window.blit(loaded["map"],(0,0))
 if pygame.joystick.get_count()>0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
+show=False
 lives=3
 diamonds=0
 terrain=Terrain()
@@ -685,6 +688,7 @@ l_buttons=[
     
     
 ]
+banw=0
 def background(img):
     window.blit(img,(0,0))
 A_for_player=False
@@ -966,6 +970,9 @@ while True:
             break
         if keys[pygame.K_q] and keys[pygame.K_w] and keys[pygame.K_e]:
             prozor=-10
+            prazan=[]
+            prazan=adder(prazan,"levels/sveprazno.txt")
+            l_terrain=prazan[0]
         if keys[pygame.K_ESCAPE] and escapeuse:
             escapeuse=False
             break
@@ -994,7 +1001,13 @@ while True:
         if keys[pygame.K_c]:
             zamena="c"
         if keys[pygame.K_SPACE]:
-            zamena=" "
+            zamena="."
+        if keys[pygame.K_w]:
+            if banw==0:
+                show=Boolflip(show)
+                banw=30
+        if banw>0:
+            banw-=1
         if mouseState[0]==True:
             for i in range(len(l_terrain)):
                 for j in range(len(l_terrain[i])):
@@ -1003,7 +1016,8 @@ while True:
         if keys[pygame.K_ESCAPE]:
             acronym=input()
             if acronym!="n":
-                writeintxt(l_terrain,acronym)
+                imezafile=f"levels/map{acronym}.txt"
+                writeintxt(l_terrain,imezafile)
             prozor=0
             escapeuse=False
     if prozor==-2:
