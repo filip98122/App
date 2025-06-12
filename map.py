@@ -1,12 +1,13 @@
 from General_info import *
 timeslist=[
-[15,255],
+[19,255],
 [18,255],
 [34,127],
-[23,510]
+[23,510],
+[0,255]
 ]
 
-levels=4
+levels=len(timeslist)
 level=1
 l_level=[]
 def adder(list,filename):

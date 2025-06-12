@@ -50,13 +50,22 @@ def find_boulder(x,y):
     for i in range(len(l_boulders)):
         if l_boulders[i].x==x and l_boulders[i].y==y:
             return i
-            break
+
 
 def find_gems(x,y):
     for i in range(len(l_gems)):
         if l_gems[i].x==x and l_gems[i].y==y:
             return i
-            break
+
+
+def find_enemies(x,y):
+    for i in range(len(l_enemies)):
+        if l_enemies[i].x==x and l_enemies[i].y==y:
+            return i
+def find_ghosts(x,y):
+    for i in range(len(l_phantoms)):
+        if l_phantoms[i].x==x and l_phantoms[i].y==y:
+            return i
 
 def highlight(width,height,x,y,mousePos):
     if mousePos[0] > x and mousePos[0] < x + width and mousePos[1] > y and mousePos[1] < y + height:
@@ -216,6 +225,9 @@ class Explosion:
                     if terrainexplosion=="b":
                         boulderidex=find_boulder((base2+j)*tilewh,(base1+i)*tilewh)
                         l_boulders[boulderidex].alive=False
+                    if terrainexplosion=="e":
+                        indexenemy=find_enemies((base2+j)*tilewh,(base1+i)*tilewh)
+                        l_enemies[indexenemy].alive=False
 
 class Terrain:
     def draw(s, map):
@@ -249,19 +261,29 @@ class Terrain:
                         s.img=loaded[5]
                     else:
                         s.img=loaded[8]
-                    
+                if l_terrain[i][j]=="e":
+                    s.img="1"
+                if l_terrain[i][j]=="f":
+                    s.img="1"
                 if l_terrain[i][j]=="c":
                     s.img=loaded[7]
                 if l_terrain[i][j]=="p":
                     window.blit(s.img,(player.x+camerax,player.y+cameray))
                 else:
                     if j*(tilewh)+offsetx+camerax>-1+-tilewh and j*(tilewh)+offsetx+camerax<WIDTH and i*(tilewh)+offsety+cameray>-1+-tilewh and i*(tilewh)+cameray+offsety<=HEIGHT and s.img!="":
+                        if l_terrain[i][j]=="e":
+                            ind=find_enemies(j*(tilewh),i*(tilewh))
+                            s.img=loaded[f"enemy{l_enemies[ind].direction}"]
+                        if l_terrain[i][j]=="f":
+                            ind=find_ghosts(j*(tilewh),i*(tilewh))
+                            s.img=loaded[f"ghost{l_phantoms[ind].direction}"]
                         window.blit(s.img,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
+            
                     if j*(tilewh)+offsetx+camerax>-1+-tilewh and j*(tilewh)+offsetx+camerax<WIDTH and i*(tilewh)+offsety+cameray>-1+-tilewh and i*(tilewh)+cameray+offsety<=HEIGHT and s.img1!="":
                         window.blit(s.img1,(j*(tilewh)+offsetx+camerax,i*(tilewh)+offsety+cameray))
                     killtranssquare=random.randint(1,20)
                     if killtranssquare==1:
-                        trans[i][j]="."
+                        trans[i][j]="."  
     def draw_for_helper(s,l_terrain):
         global camerax
         global cameray
@@ -278,6 +300,8 @@ class Terrain:
                     s.img=loaded[3]
                 if l_terrain[i][j]=="g":
                     s.img=loaded[4]
+                if l_terrain[i][j]=="e":
+                    s.img=loaded[16]
                 if l_terrain[i][j]=="v":
                     if dooropen==False:
                         s.img=loaded[5]
@@ -299,6 +323,7 @@ terrain=Terrain()
 camera_speed=tilewh
 SVAKIH30=0
 l_gems=[]
+l_enemies=[]
 deathtime=300
 offsetx=0
 offsety=0
@@ -333,6 +358,19 @@ class Diamond:
                         global restart
                         restart+=1
                         s.alive=False
+            elif terraincheck=="e":
+                if s.Falling==True:
+                    
+                    s.explodid_spawn=True
+                    base1=int(s.y/tilewh)+1
+                    base2=int(s.x/tilewh)
+                    s.time=s.again
+                    l_explosions.append(Explosion(base2,base1,s.again))
+            elif terraincheck=="f":
+                ispodindex=find_ghosts(s.x,s.y+tilewh)
+                if s.Falling:
+                    l_phantoms[ispodindex].alive=False
+                    map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="."
             elif terraincheck=="g":
                     if s.Falling==True:
                         ispodindex=find_gems(s.x,s.y+tilewh)
@@ -399,24 +437,196 @@ class Diamond:
 def die():
     window.blit(loaded[10],(0,0))
     window.blit(loaded[9],((WIDTH/2)-(loaded[9].get_width()/2),0))
-
-
+class Ghost:
+    def __init__(s,x,y):
+        s.x=x
+        s.y=y
+        s.alive=True
+        s.again=20/gamespeed
+        s.time=s.again
+        s.direction=0
+        s.goforth=False
+        s.turnright=False
+    def find_path(s,terrain):
+        if s.alive:
+            global restart
+            if s.direction==0:
+                up=terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]
+                left=terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]
+                right=terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]
+            if s.direction==1:
+                left=terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]
+                up=terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]
+                right=terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]
+            if s.direction==2:
+                right=terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]
+                left=terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]
+                up=terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]
+            if s.direction==3:
+                right=terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]
+                left=terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]
+                up=terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]
+            if s.time==0:
+                s.direction%=4
+                s.time=s.again
+                if s.goforth:
+                    
+                    s.goforth=False
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="."
+                    if s.direction==0:
+                        s.y-=tilewh
+                    if s.direction==1:
+                        s.x+=tilewh
+                    if s.direction==2:
+                        s.y+=tilewh
+                    if s.direction==3:
+                        s.x-=tilewh
+                    if terrain[int(s.y/tilewh)][int(s.x/tilewh)]=="p":
+                        restart+=1
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="f"
+                elif s.turnright:
+                    s.turnright=False
+                    s.direction+1
+                    s.direction%=4
+                elif up != "." and up != "p":
+                    if left=="." or left=="p":
+                        if left=="p":
+                            restart+=1
+                        s.direction-=1
+                        s.direction%=4
+                        s.goforth=True
+                    elif right=="." or right=="p":
+                        if right=="p":
+                            restart+=1
+                        s.direction+=1
+                        s.direction%=4
+                        s.goforth=True
+                    else:
+                        s.turnright=True
+                        s.direction+=1
+                        s.direction%=4
+                elif left =="." or left=="p":
+                    if left=="p":
+                        restart+=1
+                    s.direction-=1
+                    s.direction%=4
+                    s.goforth=True
+                else:
+                    s.direction%=4
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="."
+                    if s.direction==0:
+                        if terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]=="." or terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]=="p":
+                            s.y-=tilewh
+                    if s.direction==1:
+                        if terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]=="." or terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]=="p":
+                            s.x+=tilewh
+                    if s.direction==2:
+                        if terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]=="." or terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]=="p":
+                            s.y+=tilewh
+                    if s.direction==3:
+                        if terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]=="." or terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]=="p":
+                            s.x-=tilewh
+                    if terrain[int(s.y/tilewh)][int(s.x/tilewh)]=="p":
+                        restart+=1
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="f"
+            if s.time>0:
+                s.time-=1
+        return terrain
 class Enemy:
     def __init__(s,x,y):
         s.x=x
         s.y=y
-        s.img=loaded[16]
+        s.alive=True
+        s.again=20/gamespeed
+        s.time=s.again
         s.direction=0
-    def find_path(s):
-        orignalx=s.x
-        orignaly=s.y
-        pos=terrain[s.y/tilewh][s.x/tilewh]
-        up=terrain[s.y/tilewh-1][s.x/tilewh]
-        down=terrain[s.y/tilewh+1][s.x/tilewh]
-        left=terrain[s.y/tilewh][s.x/tilewh-1]
-        right=terrain[s.y/tilewh][s.x/tilewh+1]
-        if s.direction==0:
-            pass
+        s.goforth=False
+        s.turnright=False
+    def find_path(s,terrain):
+        if s.alive:
+            global restart
+            if s.direction==0:
+                up=terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]
+                left=terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]
+                right=terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]
+            if s.direction==1:
+                left=terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]
+                up=terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]
+                right=terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]
+            if s.direction==2:
+                right=terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]
+                left=terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]
+                up=terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]
+            if s.direction==3:
+                right=terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]
+                left=terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]
+                up=terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]
+            if s.time==0:
+                s.direction%=4
+                s.time=s.again
+                if s.goforth:
+                    
+                    s.goforth=False
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="."
+                    if s.direction==0:
+                        s.y-=tilewh
+                    if s.direction==1:
+                        s.x+=tilewh
+                    if s.direction==2:
+                        s.y+=tilewh
+                    if s.direction==3:
+                        s.x-=tilewh
+                    if terrain[int(s.y/tilewh)][int(s.x/tilewh)]=="p":
+                        restart+=1
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="e"
+                elif s.turnright:
+                    s.turnright=False
+                    s.direction+1
+                    s.direction%=4
+                elif up != "." and up != "p":
+                    if left=="." or left=="p":
+                        if left=="p":
+                            restart+=1
+                        s.direction-=1
+                        s.direction%=4
+                        s.goforth=True
+                    elif right=="." or right=="p":
+                        if right=="p":
+                            restart+=1
+                        s.direction+=1
+                        s.direction%=4
+                        s.goforth=True
+                    else:
+                        s.turnright=True
+                        s.direction+=1
+                        s.direction%=4
+                elif left =="." or left=="p":
+                    if left=="p":
+                        restart+=1
+                    s.direction-=1
+                    s.direction%=4
+                    s.goforth=True
+                else:
+                    s.direction%=4
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="."
+                    if s.direction==0:
+                        if terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]=="." or terrain[int(s.y/tilewh)-1][int(s.x/tilewh)]=="p":
+                            s.y-=tilewh
+                    if s.direction==1:
+                        if terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]=="." or terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]=="p":
+                            s.x+=tilewh
+                    if s.direction==2:
+                        if terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]=="." or terrain[int(s.y/tilewh)+1][int(s.x/tilewh)]=="p":
+                            s.y+=tilewh
+                    if s.direction==3:
+                        if terrain[int(s.y/tilewh)][int(s.x/tilewh)+1]=="." or terrain[int(s.y/tilewh)][int(s.x/tilewh)-1]=="p":
+                            s.x-=tilewh
+                    if terrain[int(s.y/tilewh)][int(s.x/tilewh)]=="p":
+                        restart+=1
+                    terrain[int(s.y/tilewh)][int(s.x/tilewh)]="e"
+            if s.time>0:
+                s.time-=1
+        return terrain
 class Boulder:
     def __init__(s,x,y):
         s.x=x
@@ -450,6 +660,17 @@ class Boulder:
                 else:
                     s.Falling=False
                     pass
+            elif terraincheck=="e":
+                ispodindex=find_enemies(s.x,s.y+tilewh)
+                if s.Falling:
+                    l_enemies[ispodindex].alive=False
+                    map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="."
+            elif terraincheck=="f":
+                ispodindex=find_ghosts(s.x,s.y+tilewh)
+                if s.Falling:
+                    l_phantoms[ispodindex].alive=False
+                    map[int(s.y/(tilewh))+1][int(s.x/(tilewh))]="."
+                
             elif terraincheck=="b":
                     if s.Falling==True:
                         ispodindex=find_boulder(s.x,s.y+tilewh)
@@ -481,12 +702,8 @@ class Boulder:
             elif terraincheck=="g":
                 if s.Falling==True:
                     ispodindex=find_gems(s.x,s.y+tilewh)
-                    base1=int(s.y/(tilewh)+1)
-                    base2=int(s.x/(tilewh))
                     if l_gems[ispodindex].Falling==False:
-                        if s.time==0:
-                            l_gems[ispodindex].explodid_spawn=True
-                            l_explosions.append(Explosion(base2,base1,0))
+                        s.Falling=False
                 else:
                     need=True
                     if s.time==0:
@@ -626,6 +843,10 @@ class Player:
                             map[indexpre1][indexpre2-2]="b"
                             l_boulders[iboulder].x-=tilewh
                             goback=False
+        elif terraincheck=="e":
+            restart+=1
+        elif terraincheck=="f":
+            restart+=1
         elif terraincheck=="v" and dooropen==True:
             goback=False
             l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
@@ -634,7 +855,7 @@ def replace_at(s, index, new_char):
     s[index[0]]=new_char
     return s
 l_boulders=[]
-
+l_phantoms=[]
 for i in range(len(l_terrain)):
     for j in range(len(l_terrain[i])):
         if l_terrain[i][j]=="p":
@@ -643,6 +864,11 @@ for i in range(len(l_terrain)):
             l_boulders.append(Boulder(j*(tilewh),i*(tilewh)))
         if l_terrain[i][j]=="g":
             l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
+        if l_terrain[i][j]=="e":
+            l_enemies.append(Enemy(j*tilewh,i*tilewh))
+        if l_terrain[i][j]=="f":
+            l_phantoms.append(Ghost(j*tilewh,i*tilewh))
+            
 class Button:
     def __init__(s,x,y,img,purpose,prozor,restart):
         s.x=x
@@ -743,7 +969,9 @@ def nextlevel(regen):
     l_boulders=[]
     l_explosions=[]
     l_gems=[]
-    
+    global l_enemies,l_phantoms
+    l_phantoms=[]
+    l_enemies=[]
     
     l_boulders=[]
 
@@ -755,6 +983,10 @@ def nextlevel(regen):
                 l_boulders.append(Boulder(j*(tilewh),i*(tilewh)))
             if l_terrain[i][j]=="g":
                 l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
+            if l_terrain[i][j]=="e":
+                l_enemies.append(Enemy(j*(tilewh),i*(tilewh)))
+            if l_terrain[i][j]=="f":
+                l_phantoms.append(Ghost(j*tilewh,i*tilewh))
     
     
 
@@ -777,7 +1009,7 @@ escapeuse=True
 timeset = time.time()
 music=loaded["music"]
 
-
+delayforskip=0
 
 
 music.play()
@@ -826,7 +1058,12 @@ while True:
                 if pygame.joystick.get_count()>0:
                     if event.button==0:
                         A_for_player=True
-
+        if keys[pygame.K_0] and keys[pygame.K_1] and delayforskip==0:
+            
+            l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
+            delayforskip=60
+        if delayforskip>0:
+            delayforskip-=1
         if keys[pygame.K_q]:
             A_for_player=True
         else:
@@ -950,6 +1187,28 @@ while True:
                 del l_explosions[indexdelete]
                 indexdelete-=1
             indexdelete+=1
+            
+        for i in range(len(l_enemies)):
+            l_terrain=l_enemies[i].find_path(l_terrain)
+        for i in range(len(l_phantoms)):
+            l_terrain=l_phantoms[i].find_path(l_terrain)
+        
+        
+        indexdelete=0
+        for i in range(len(l_phantoms)):
+            if l_phantoms[indexdelete].alive==False:
+                del l_phantoms[indexdelete]
+                indexdelete-=1
+            indexdelete+=1
+        
+        indexdelete=0
+        for i in range(len(l_enemies)):
+            if l_enemies[indexdelete].alive==False:
+                del l_enemies[indexdelete]
+                indexdelete-=1
+            indexdelete+=1
+
+
         terrain.draw(l_terrain)
         bar.general()
         if restart>0:

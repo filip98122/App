@@ -1,10 +1,10 @@
 ++++++++++++++++++++++++++++++++++++++++
 +dddddd.ddgdb.dddddbdbddddddd.ddddbdddd+
-+dbpbdddddd.dddddddddbgddbdddd.dddd.ddd+
-+dddddddddd.dd.dddddbdbddbddddddddbdddd+
-+bd..dddddddddbddddddbddbddddbdddbddddd+
-+bdbbdddddddddbbddbddddddddbddddddbdb.d+
-+dddbddbddddddddbdddddbd.bddddddddbdbbd+
++dbpbdddd.b.dddddddddbgddbdddd.dddd.ddd+
++dddddddd.d.dd.dddddbdbddbddddddddbdddd+
++bd..dddd.d.ddbddddddbddbddddbdddbddddd+
++bdbbddddfd.ddbbddbddddddddbddddddbdb.d+
++dddbddbd.d.ddddbdddddbd.bddddddddbdbbd+
 +ccccccccccccccccccccccccccccccdddbddbd+
 +d.dddbddgd.ddbdbddddddddddgdb.ddddddbd+
 +ddgdddddbddddd.ddddddddb..bddgddddbddd+

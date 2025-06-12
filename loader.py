@@ -24,7 +24,17 @@ class Loader:
         loaded[13]=pygame.transform.scale(pygame.image.load("textures/options.png"),(tilewh*7,tilewh*3))
         loaded[14]=pygame.transform.scale(pygame.image.load("textures/bar.png"),(tilewh*14,tilewh*1.5))
         loaded[15]=pygame.transform.scale(pygame.image.load("textures/dot.png"),(loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545),loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545)))
-        loaded[16]=pygame.transform.scale(pygame.image.load("textures/enemy.png"),(tilewh,tilewh))
+        
+        loaded["enemy0"]=pygame.transform.scale(pygame.image.load("textures/enemy0.png"),(tilewh,tilewh))
+        loaded["enemy1"]=pygame.transform.scale(pygame.image.load("textures/enemy1.png"),(tilewh,tilewh))
+        loaded["enemy2"]=pygame.transform.scale(pygame.image.load("textures/enemy2.png"),(tilewh,tilewh))
+        loaded["enemy3"]=pygame.transform.scale(pygame.image.load("textures/enemy3.png"),(tilewh,tilewh))
+        
+        loaded["ghost0"]=pygame.transform.scale(pygame.image.load("textures/ghost0.png"),(tilewh,tilewh))
+        loaded["ghost1"]=pygame.transform.scale(pygame.image.load("textures/ghost1.png"),(tilewh,tilewh))
+        loaded["ghost2"]=pygame.transform.scale(pygame.image.load("textures/ghost2.png"),(tilewh,tilewh))
+        loaded["ghost3"]=pygame.transform.scale(pygame.image.load("textures/ghost3.png"),(tilewh,tilewh))
+        
         loaded["music"]=pygame.mixer.Sound("textures/Game music.mp3")
         loaded["map"]=pygame.transform.scale(pygame.image.load("textures/map.png"),(WIDTH,HEIGHT))
         return loaded
