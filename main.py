@@ -13,9 +13,116 @@ def end():
     decrypted_data = f.decrypt(encrypted_data)
     decrypted_data1=json.loads(decrypted_data.decode('utf-8'))
     return decrypted_data1
+def nextlevelsacusto(regen,infoforgame):
+    global l_boulders
+    global l_explosions
+    global l_gems
+    global l_terrain
+    global level
+    global seconds
+    global prozor
+    global player
+    global trans
+    global offsetx
+    global offsety
+    global bar
+    global diamonds
+    global dooropen
+    global elapsed_time
+    global lives
+    if regen:
+        lives=3
+    bar=Game_bar()
+    l_terrain=infoforgame["l_terrain"]
+    level=infoforgame["level"]
+    seconds=infoforgame["seconds"]
+    trans=infoforgame["trans"]
+    diamonds=infoforgame["diamonds"]
+    dooropen=infoforgame["dooropen"]
+    elapsed_time=infoforgame["elapsed_time"]
+    lives=infoforgame["lives"]
+    prozor=1
+
+    l_boulders=[]
+    l_explosions=[]
+    l_gems=[]
+    global l_enemies,l_phantoms
+    l_phantoms=[]
+    l_enemies=[]
+    
+    l_boulders=[]
+
+    for i in range(len(l_terrain)):
+        for j in range(len(l_terrain[i])):
+            if l_terrain[i][j]=="p":
+                player=Player(j*(tilewh),i*(tilewh))
+            if l_terrain[i][j]=="b":
+                l_boulders.append(Boulder(j*(tilewh),i*(tilewh)))
+            if l_terrain[i][j]=="g":
+                l_gems.append(Diamond(j*(tilewh),i*(tilewh),False))
+            if l_terrain[i][j]=="e":
+                l_enemies.append(Enemy(j*(tilewh),i*(tilewh)))
+            if l_terrain[i][j]=="f":
+                l_phantoms.append(Ghost(j*tilewh,i*tilewh))
+    
+    
+
+    
+    offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
+    offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
+    player.x=((WIDTH/2)/tilewh)*tilewh
+    player.y=((HEIGHT/2)/tilewh)*tilewh
 camerax=0
 cameray=0
+def make_gameinfo():
+    global l_boulders,l_explosions,l_gems,l_terrain,level,seconds,player,trans,offsetx,offsety,bar,diamonds,dooropen,elapsed_time,lives
+    infoforgame={}
+    infoforgame["l_terrain"]=l_terrain
+    infoforgame["level"]=level
+    infoforgame["seconds"]=seconds
+    infoforgame["trans"]=trans
+    infoforgame["offsetx"]=offsetx
+    infoforgame["offsety"]=offsety
+    infoforgame["diamonds"]=diamonds
+    infoforgame["dooropen"]=dooropen
+    infoforgame["elapsed_time"]=elapsed_time
+    infoforgame["lives"]=lives
+    return infoforgame
+def init_gameinfo(gameinfo):
+    global l_boulders,l_explosions,l_gems,l_terrain,level,seconds,player,trans,offsetx,offsety,bar,diamonds,dooropen,elapsed_time,lives
+    nextlevelsacusto(True,gameinfo)
+"""
 
+    infoforgame={}
+    infoforgame["l_terrain"]=l_terrain
+    infoforgame["level"]=level
+    infoforgame["seconds"]=seconds
+    infoforgame["trans"]=trans
+    infoforgame["offsetx"]=offsetx
+    infoforgame["offsety"]=offsety
+    infoforgame["diamonds"]=diamonds
+    infoforgame["dooropen"]=dooropen
+    infoforgame["elapsed_time"]=elapsed_time
+    infoforgame["lives"]=lives
+
+
+
+
+    l_boulders=[]
+    l_explosions=[]
+    l_gems=[]
+    l_terrain=gameinfo["l_terrain"]
+    level=gameinfo["level"]
+    seconds=gameinfo["seconds"]
+    trans=gameinfo["trans"]
+    offsetx=gameinfo["offsetx"]
+    offsety=gameinfo["offsety"]
+    diamonds=gameinfo["diamonds"]
+    dooropen=gameinfo["dooropen"]
+    elapsed_time=gameinfo["elapsed_time"]
+    lives=gameinfo["lives"]
+"""
+    
 def collison(x1,y1,r1,x2,y2,r2):
     dx = x2 - x1
     dy = y2 - y1
@@ -37,13 +144,16 @@ def Boolflip(var):
         var=False
     return var
 #char ="!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+
 def read():
     info=end()
+    
     return info
 info=read()
 settings=info["settings"]
 def save(info):
     ens(info)
+save({'diamonds': 0, 'username': '', 'settings': {'Music': 0, 'Fast game': 2, 'Hardcore': False}, 'saves': {'save1': {}, 'save2': {}, 'save3': {}}})
 
 
 def find_boulder(x,y):
@@ -870,47 +980,64 @@ for i in range(len(l_terrain)):
             l_phantoms.append(Ghost(j*tilewh,i*tilewh))
             
 class Button:
-    def __init__(s,x,y,img,purpose,prozor,restart):
+    def __init__(s,x,y,img,purpose,prozor,restart,save,dele):
         s.x=x
         s.y=y
+        s.saveimg=img
         s.img=loaded[img]
         s.restart =restart
+        s.dele=dele
         s.purpose=purpose
         s.prozor=prozor
+        s.save=save
+        s.forcedel=False
+        s.forcemove=False
         s.x-=s.img.get_width()/2
         s.y-=s.img.get_height()/2
     def genearl(s):
         global prozor
+        global saveslot
         if s.prozor==prozor:
             global mouseuse
             if button_colision(s.img.get_width(),s.img.get_height(),s.x,s.y,mousePos,mouseState) and mouseuse:
-                mouseuse=False
                 prozor=s.purpose
-                if s.restart:
-                    global level
-                    level=0
-                    global l_boulders
-                    global l_explosions
-                    global l_gems
-                    global l_terrain
-                    global seconds
-                    global player
-                    global trans
-                    global offsetx
-                    global offsety
-                    global bar
-                    global diamonds
-                    global dooropen
-                    global elapsed_time
-                    l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
+                if s.saveimg=="delete":
+                    s.forcedel=True
+                if s.saveimg==12:
+                    s.forcemove=True
+                mouseuse=False
+                if s.save!=None:
+                    global l_boulders,l_explosions,l_gems,l_terrain,seconds,player,trans,offsetx,offsety,bar,diamonds,dooropen,elapsed_time,level,info
+                    if s.forcemove:
+                        s.forcemove=False
+                        init_gameinfo(info['saves'][f'save{s.save}'])
+                        saveslot=s.save
+                    elif s.save!=None:
+                        if info['saves'][f'save{s.save}']=={} or s.forcedel:
+                            s.forcedel=False
+                            level=0
+                            l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
+                            info['saves'][f'save{s.save}']=make_gameinfo()
+                            init_gameinfo(info['saves'][f'save{s.save}'])
+                            saveslot=s.save
+                        else:
+                            prozor=-6
+                            l_buttons[6].save=s.save
+                            l_buttons[5].save=s.save
+                    
             window.blit(s.img,(s.x,s.y))
+height4=HEIGHT/4
 height5=HEIGHT/5
 width2=WIDTH/2
 l_buttons=[
-    Button(width2,height5*1.5,11,1,0, True),
-    Button(width2,height5*2.5,12,1,0, False),
-    Button(width2,height5*3.5,13,-2,0,False)
+    Button(width2,height4*1.5,11,-5,0, False,None,None),
+    Button(width2,height4*2.5,13,-2,0,False ,None,None),
+    Button(width2,height5*1,"save1",-6,-5,False,1,None),
+    Button(width2,height5*2,"save2",-6,-5,False,2,None),
+    Button(width2,height5*3,"save3",-6,-5,False,3,None),
     
+    Button(width2-loaded["delete"].get_height()/2,height5*2,"delete",1,-6,False,0,4),
+    Button(width2-loaded[12].get_height()/2,height5*3,12,1,-6,False,0,5)
     
     
 ]
@@ -960,7 +1087,7 @@ def nextlevel(regen):
     level+=1
     prozor=1
     if level==len(l_level)+1:
-        prozor=0
+        prozor=-5
         level=1
         #game done
     l_terrain=copy.deepcopy(l_level[level-1][2])
@@ -998,6 +1125,7 @@ def nextlevel(regen):
     player.x=((WIDTH/2)/tilewh)*tilewh
     player.y=((HEIGHT/2)/tilewh)*tilewh
     return l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx
+
 prozor=0
 offsety=((((HEIGHT/2)/tilewh)*tilewh)-player.y)
 offsetx=((((WIDTH/2)/tilewh)*tilewh)-player.x)
@@ -1010,7 +1138,7 @@ timeset = time.time()
 music=loaded["music"]
 
 delayforskip=0
-
+saveslot=1
 
 music.play()
 exitsde=False
@@ -1051,9 +1179,12 @@ while True:
         
     if prozor==1:
         went=False
+        if keys[pygame.K_x]:
+            gameinfo=make_gameinfo()
+            info['saves'][f"save{saveslot}"]=gameinfo
         for event in events:
             if event.type == pygame.QUIT:
-                prozor=0
+                prozor=-5
             if event.type == pygame.JOYBUTTONDOWN:
                 if pygame.joystick.get_count()>0:
                     if event.button==0:
@@ -1140,8 +1271,10 @@ while True:
                     player.time=16
         
         if keys[pygame.K_ESCAPE] and escapeuse:
-            prozor=0
+            prozor=-5
             escapeuse=False
+            gameinfo=make_gameinfo()
+            info['saves'][f"save{saveslot}"]=gameinfo
         if keys[pygame.K_UP]:
             cameray+=camera_speed/5
         if keys[pygame.K_DOWN]:
@@ -1219,7 +1352,32 @@ while True:
             else:
                 level-=1
                 l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
+    if prozor==-5:
+        background(loaded[6])
+        if keys[pygame.K_ESCAPE]:
+            escapeuse=False
+            prozor=0
+        for event in events:
+            if event.type == pygame.QUIT:
+                exitsde=True
+        if exitsde:
+            exitsde=False
+            prozor=0
+    if prozor==-6:
+        background(loaded[6])
+        if keys[pygame.K_ESCAPE]:
+            escapeuse=False
+            prozor=0
+        for event in events:
+            if event.type == pygame.QUIT:
+                exitsde=True
+        if exitsde:
+            exitsde=False
+            prozor=0
+        
     if prozor==0:
+        
+        
         background(loaded[6])
         for event in events:
             if event.type == pygame.QUIT:
@@ -1235,6 +1393,7 @@ while True:
         if keys[pygame.K_ESCAPE] and escapeuse:
             escapeuse=False
             break
+
     if prozor==-10:
         if keys[pygame.K_UP]:
             cameray+=camera_speed/5
@@ -1297,7 +1456,7 @@ while True:
             deathtime=300
             level=0
             l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
-            prozor=0
+            prozor=-5
     for i in range(len(l_buttons)):
         l_buttons[i].genearl()
     pygame.display.update()

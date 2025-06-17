@@ -34,7 +34,12 @@ class Loader:
         loaded["ghost1"]=pygame.transform.scale(pygame.image.load("textures/ghost1.png"),(tilewh,tilewh))
         loaded["ghost2"]=pygame.transform.scale(pygame.image.load("textures/ghost2.png"),(tilewh,tilewh))
         loaded["ghost3"]=pygame.transform.scale(pygame.image.load("textures/ghost3.png"),(tilewh,tilewh))
-        
+
+        loaded["save1"]=pygame.transform.scale(pygame.image.load("textures/save1.png"),(tilewh*7,tilewh*3))
+        loaded["save2"]=pygame.transform.scale(pygame.image.load("textures/save2.png"),(tilewh*7,tilewh*3))
+        loaded["save3"]=pygame.transform.scale(pygame.image.load("textures/save3.png"),(tilewh*7,tilewh*3))
+
+        loaded["delete"]=pygame.transform.scale(pygame.image.load("textures/delete.png"),(tilewh*7,tilewh*3))
         loaded["music"]=pygame.mixer.Sound("textures/Game music.mp3")
         loaded["map"]=pygame.transform.scale(pygame.image.load("textures/map.png"),(WIDTH,HEIGHT))
         return loaded
