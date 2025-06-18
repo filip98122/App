@@ -13,7 +13,7 @@ def end():
     decrypted_data = f.decrypt(encrypted_data)
     decrypted_data1=json.loads(decrypted_data.decode('utf-8'))
     return decrypted_data1
-def nextlevelsacusto(regen,infoforgame):
+def nextlevelsacusto(regen,listinfo):
     global l_boulders
     global l_explosions
     global l_gems
@@ -33,14 +33,14 @@ def nextlevelsacusto(regen,infoforgame):
     if regen:
         lives=3
     bar=Game_bar()
-    l_terrain=infoforgame["l_terrain"]
-    level=infoforgame["level"]
-    seconds=infoforgame["seconds"]
-    trans=infoforgame["trans"]
-    diamonds=infoforgame["diamonds"]
-    dooropen=infoforgame["dooropen"]
-    elapsed_time=infoforgame["elapsed_time"]
-    lives=infoforgame["lives"]
+    l_terrain=listinfo["l_terrain"]
+    level=listinfo["level"]
+    seconds=listinfo["seconds"]
+    trans=listinfo["trans"]
+    diamonds=listinfo["diamonds"]
+    dooropen=listinfo["dooropen"]
+    elapsed_time=listinfo["elapsed_time"]
+    lives=listinfo["lives"]
     prozor=1
 
     l_boulders=[]
@@ -76,21 +76,20 @@ camerax=0
 cameray=0
 def make_gameinfo():
     global l_boulders,l_explosions,l_gems,l_terrain,level,seconds,player,trans,offsetx,offsety,bar,diamonds,dooropen,elapsed_time,lives
-    infoforgame={}
-    infoforgame["l_terrain"]=l_terrain
-    infoforgame["level"]=level
-    infoforgame["seconds"]=seconds
-    infoforgame["trans"]=trans
-    infoforgame["offsetx"]=offsetx
-    infoforgame["offsety"]=offsety
-    infoforgame["diamonds"]=diamonds
-    infoforgame["dooropen"]=dooropen
-    infoforgame["elapsed_time"]=elapsed_time
-    infoforgame["lives"]=lives
-    return infoforgame
-def init_gameinfo(gameinfo):
-    global l_boulders,l_explosions,l_gems,l_terrain,level,seconds,player,trans,offsetx,offsety,bar,diamonds,dooropen,elapsed_time,lives
-    nextlevelsacusto(True,gameinfo)
+    infolistallformaking={}
+    infolistallformaking["l_terrain"]=l_terrain
+    infolistallformaking["level"]=level
+    infolistallformaking["seconds"]=seconds
+    infolistallformaking["trans"]=trans
+    infolistallformaking["offsetx"]=offsetx
+    infolistallformaking["offsety"]=offsety
+    infolistallformaking["diamonds"]=diamonds
+    infolistallformaking["dooropen"]=dooropen
+    infolistallformaking["elapsed_time"]=elapsed_time
+    infolistallformaking["lives"]=lives
+    return infolistallformaking
+def init_gameinfo(gameforinfo):
+    nextlevelsacusto(True,gameforinfo)
 """
 
     infoforgame={}
@@ -153,7 +152,6 @@ info=read()
 settings=info["settings"]
 def save(info):
     ens(info)
-save({'diamonds': 0, 'username': '', 'settings': {'Music': 0, 'Fast game': 2, 'Hardcore': False}, 'saves': {'save1': {}, 'save2': {}, 'save3': {}}})
 
 
 def find_boulder(x,y):
@@ -965,6 +963,7 @@ def replace_at(s, index, new_char):
     s[index[0]]=new_char
     return s
 l_boulders=[]
+vartest=0
 l_phantoms=[]
 for i in range(len(l_terrain)):
     for j in range(len(l_terrain[i])):
@@ -1014,6 +1013,7 @@ class Button:
                         saveslot=s.save
                     elif s.save!=None:
                         if info['saves'][f'save{s.save}']=={} or s.forcedel:
+                            info['quicksaves'][s.save]={}
                             s.forcedel=False
                             level=0
                             l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
@@ -1090,6 +1090,8 @@ def nextlevel(regen):
         prozor=-5
         level=1
         #game done
+        info["saves"][f"save{saveslot}"]={}
+        info["quicksaves"][saveslot]
     l_terrain=copy.deepcopy(l_level[level-1][2])
     
     trans=create_trans(l_terrain)
@@ -1180,8 +1182,11 @@ while True:
     if prozor==1:
         went=False
         if keys[pygame.K_x]:
-            gameinfo=make_gameinfo()
-            info['saves'][f"save{saveslot}"]=gameinfo
+            quickinfo=make_gameinfo()
+            info['quicksaves'][f"{saveslot}"]=copy.deepcopy(quickinfo)
+        if keys[pygame.K_l]:
+            if info['quicksaves'][f"{saveslot}"]!={}:
+                init_gameinfo(copy.deepcopy(info['quicksaves'][f"{saveslot}"]))
         for event in events:
             if event.type == pygame.QUIT:
                 prozor=-5
@@ -1349,6 +1354,7 @@ while True:
             lives-=1
             if info["settings"]["Hardcore"] or lives==0:
                 prozor=-1
+                info["saves"][f"save{saveslot}"]={}
             else:
                 level-=1
                 l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
