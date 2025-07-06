@@ -24,6 +24,7 @@ class Loader:
         loaded[13]=pygame.transform.scale(pygame.image.load("textures/options.png"),(tilewh*7,tilewh*3))
         loaded[14]=pygame.transform.scale(pygame.image.load("textures/bar.png"),(tilewh*14,tilewh*1.5))
         loaded[15]=pygame.transform.scale(pygame.image.load("textures/dot.png"),(loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545),loaded[14].get_height()-(loaded[14].get_height()/4+loaded[14].get_height()/2.545454545454545)))
+        loaded[16]=pygame.transform.scale(pygame.image.load("textures/minimenu.png"),(WIDTH,HEIGHT))
         
         loaded["enemy0"]=pygame.transform.scale(pygame.image.load("textures/enemy0.png"),(tilewh,tilewh))
         loaded["enemy1"]=pygame.transform.scale(pygame.image.load("textures/enemy1.png"),(tilewh,tilewh))
@@ -34,6 +35,10 @@ class Loader:
         loaded["ghost1"]=pygame.transform.scale(pygame.image.load("textures/ghost1.png"),(tilewh,tilewh))
         loaded["ghost2"]=pygame.transform.scale(pygame.image.load("textures/ghost2.png"),(tilewh,tilewh))
         loaded["ghost3"]=pygame.transform.scale(pygame.image.load("textures/ghost3.png"),(tilewh,tilewh))
+
+        loaded["saveslot1"]=pygame.transform.scale(pygame.image.load("textures/saveslot1.png"),(tilewh*7,tilewh*3))
+        loaded["saveslot2"]=pygame.transform.scale(pygame.image.load("textures/saveslot2.png"),(tilewh*7,tilewh*3))
+        loaded["saveslot3"]=pygame.transform.scale(pygame.image.load("textures/saveslot3.png"),(tilewh*7,tilewh*3))
 
         loaded["save1"]=pygame.transform.scale(pygame.image.load("textures/save1.png"),(tilewh*7,tilewh*3))
         loaded["save2"]=pygame.transform.scale(pygame.image.load("textures/save2.png"),(tilewh*7,tilewh*3))

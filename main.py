@@ -152,8 +152,8 @@ info=read()
 settings=info["settings"]
 def save(info):
     ens(info)
-
-
+save({'diamonds': 0, 'username': '', 'settings': {'Music': 0, 'Fast game': 2, 'Hardcore': False}, 'saves': {'saveslot1': {"save1":{},"save2":{},"save3":{}}, 'saveslot2': {"save1":{},"save2":{},"save3":{}}, 'saveslot3': {"save1":{},"save2":{},"save3":{}}}, 'quicksaves': {'1': {}, '2': {}, '3': {}},"newestsaves":[None,None,None]})
+info = read()
 def find_boulder(x,y):
     for i in range(len(l_boulders)):
         if l_boulders[i].x==x and l_boulders[i].y==y:
@@ -979,7 +979,7 @@ for i in range(len(l_terrain)):
             l_phantoms.append(Ghost(j*tilewh,i*tilewh))
             
 class Button:
-    def __init__(s,x,y,img,purpose,prozor,restart,save,dele):
+    def __init__(s,x,y,img,purpose,prozor,restart,save,dele,slot):
         s.x=x
         s.y=y
         s.saveimg=img
@@ -993,7 +993,9 @@ class Button:
         s.forcemove=False
         s.x-=s.img.get_width()/2
         s.y-=s.img.get_height()/2
+        s.slot=slot
     def genearl(s):
+        
         global prozor
         global saveslot
         if s.prozor==prozor:
@@ -1005,39 +1007,84 @@ class Button:
                 if s.saveimg==12:
                     s.forcemove=True
                 mouseuse=False
-                if s.save!=None:
+                if s.slot==True:
+                    saveslot=s.save
+                
+                if s.save!=None and s.slot==False:
                     global l_boulders,l_explosions,l_gems,l_terrain,seconds,player,trans,offsetx,offsety,bar,diamonds,dooropen,elapsed_time,level,info
                     if s.forcemove:
                         s.forcemove=False
-                        init_gameinfo(info['saves'][f'save{s.save}'])
-                        saveslot=s.save
+                        init_gameinfo(info['saves'][f'saveslot{saveslot}'][f'save{s.save}'])
                     elif s.save!=None:
-                        if info['saves'][f'save{s.save}']=={} or s.forcedel:
-                            info['quicksaves'][s.save]={}
+                        if info["newestsaves"][s.save-1]==None or s.forcedel:
+                            info["quicksaves"][f"{s.save}"]={}
+                            info['saves'][f'saveslot{s.save}'][f'save1']={}
+                            info['saves'][f'saveslot{s.save}'][f'save2']={}
+                            info['saves'][f'saveslot{s.save}'][f'save3']={}
+                            info["newestsaves"][s.save-1]=1
                             s.forcedel=False
                             level=0
                             l_boulders,l_terrain,l_gems,l_explosions,offsety,offsetx = nextlevel(True)
-                            info['saves'][f'save{s.save}']=make_gameinfo()
-                            init_gameinfo(info['saves'][f'save{s.save}'])
+                            info['saves'][f'saveslot{s.save}'][f'save1']=make_gameinfo()
+                            init_gameinfo(info['saves'][f'saveslot{s.save}'][f'save1'])
                             saveslot=s.save
                         else:
-                            prozor=-6
-                            l_buttons[6].save=s.save
-                            l_buttons[5].save=s.save
+                            prozor=-5
+                            
                     
             window.blit(s.img,(s.x,s.y))
 height4=HEIGHT/4
 height5=HEIGHT/5
 width2=WIDTH/2
-l_buttons=[
-    Button(width2,height4*1.5,11,-5,0, False,None,None),
-    Button(width2,height4*2.5,13,-2,0,False ,None,None),
-    Button(width2,height5*1,"save1",-6,-5,False,1,None),
-    Button(width2,height5*2,"save2",-6,-5,False,2,None),
-    Button(width2,height5*3,"save3",-6,-5,False,3,None),
+class Buttonsforsave:
+    def __init__(s,x,y,load,img,prozor,purpose,save):
+        s.x=x
+        s.y=y
+        s.load=load
+        s.img=img
+        s.width=s.img.get_width()
+        s.height=s.img.get_height()
+        s.prozor=prozor
+        s.purpose=purpose
+        s.save=save
+    def general(s):
+        global prozor
+        global saveslot
+        if s.prozor==prozor:
+            global mouseuse
+            if button_colision(s.img.get_width(),s.img.get_height(),s.x,s.y,mousePos,mouseState) and mouseuse:
+                prozor=s.purpose #for save == -2 pa onda nek bude instead of ako treba da se replacuje, ali ako nije full onda samo minimenu
+                mouseuse=False
+                if s.load==1:
+                    init_gameinfo(info['saves'][f'saveslot{saveslot}'][f'save{s.save}'])
+                    prozor=-10
+                elif s.load==0:
+                    if info['saves'][f'saveslot{saveslot}'][f'save{s.save}']:
+                        pass
+l_buttonsforsave=[
     
-    Button(width2-loaded["delete"].get_height()/2,height5*2,"delete",1,-6,False,0,4),
-    Button(width2-loaded[12].get_height()/2,height5*3,12,1,-6,False,0,5)
+    
+    
+]
+
+
+
+
+
+l_buttons=[
+    Button(width2,height4*1.5,11,-5,0, False,None,None,False),
+    Button(width2,height4*2.5,13,-2,0,False ,None,None,False),
+    Button(width2,height5*1,"saveslot1",-6,-5,False,1,None,True),
+    Button(width2,height5*2,"saveslot2",-6,-5,False,2,None,True),
+    Button(width2,height5*3,"saveslot3",-6,-5,False,3,None,True),
+    
+    Button(width2,height5*1,"save1",-7,-6,False,1,None,False),
+    Button(width2,height5*2,"save2",-7,-6,False,2,None,False),
+    Button(width2,height5*3,"save3",-7,-6,False,3,None,False),
+
+    
+    Button(width2-loaded["delete"].get_height()/2,height5*2,"delete",1,-7,False,0,4,False),
+    Button(width2-loaded[12].get_height()/2,height5*3,12,1,-7,False,0,5,False)
     
     
 ]
@@ -1276,10 +1323,8 @@ while True:
                     player.time=16
         
         if keys[pygame.K_ESCAPE] and escapeuse:
-            prozor=-5
+            prozor=10
             escapeuse=False
-            gameinfo=make_gameinfo()
-            info['saves'][f"save{saveslot}"]=gameinfo
         if keys[pygame.K_UP]:
             cameray+=camera_speed/5
         if keys[pygame.K_DOWN]:
@@ -1360,7 +1405,7 @@ while True:
                 l_boulders,map,l_gems,l_explosions,offsety,offsetx = nextlevel(False)
     if prozor==-5:
         background(loaded[6])
-        if keys[pygame.K_ESCAPE]:
+        if keys[pygame.K_ESCAPE] and escapeuse:
             escapeuse=False
             prozor=0
         for event in events:
@@ -1371,7 +1416,7 @@ while True:
             prozor=0
     if prozor==-6:
         background(loaded[6])
-        if keys[pygame.K_ESCAPE]:
+        if keys[pygame.K_ESCAPE] and escapeuse:
             escapeuse=False
             prozor=0
         for event in events:
@@ -1399,7 +1444,13 @@ while True:
         if keys[pygame.K_ESCAPE] and escapeuse:
             escapeuse=False
             break
-
+    if prozor==10:
+        background(loaded[16])
+        if keys[pygame.K_ESCAPE] and escapeuse:
+            escapeuse=False
+            prozor=-5
+            gameinfo=make_gameinfo()
+            info['saves'][f"save{saveslot}"]=gameinfo
     if prozor==-10:
         if keys[pygame.K_UP]:
             cameray+=camera_speed/5
